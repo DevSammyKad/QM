@@ -1,5 +1,5 @@
-'use client';
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
 import {
   dummyAges,
   dummyBrands,
@@ -7,14 +7,14 @@ import {
   dummyProductsForms,
   dummyUses,
   selectOptions,
-} from '@/dummyData';
-import ProductCard from '@/src/components/custom-cards/productCard/productCard';
-import CustomCheckbox from '@/src/ui/checkbox/checkbox';
-import CustomCheckboxGroup from '@/src/ui/checkbox/custom-checkbox-group';
-import GlobalSearchBox from '@/src/ui/searchbox/global-search-box';
-import CustomSelect from '@/src/ui/select/custom-select';
-import { Divider } from '@nextui-org/divider';
-import { SelectItem } from '@nextui-org/select';
+} from "@/dummyData";
+import ProductCard from "@/src/components/custom-cards/productCard/productCard";
+import CustomCheckbox from "@/src/ui/checkbox/checkbox";
+import CustomCheckboxGroup from "@/src/ui/checkbox/custom-checkbox-group";
+import GlobalSearchBox from "@/src/ui/searchbox/global-search-box";
+import CustomSelect from "@/src/ui/select/custom-select";
+import { Divider } from "@nextui-org/divider";
+import { SelectItem } from "@nextui-org/select";
 
 export default function Page() {
   const [topSellingData, setTopSellingData] = useState([]);
@@ -22,12 +22,12 @@ export default function Page() {
 
   // State for search query and filters
   const [searchParams, setSearchParams] = useState({
-    productName: '',
+    productName: "",
     brand: [],
     productForm: [],
     uses: [],
     age: [],
-    price: '',
+    price: "",
   });
 
   const [filteredData, setFilteredData] = useState([]);
@@ -57,12 +57,12 @@ export default function Page() {
       setLoading(true);
 
       const queryParams = new URLSearchParams({
-        productName: searchParams.productName || '',
-        brand: searchParams.brand.join(','),
-        productForm: searchParams.productForm.join(','),
-        uses: searchParams.uses.join(','),
-        age: searchParams.age.join(','),
-        price: searchParams.price || '',
+        productName: searchParams.productName || "",
+        brand: searchParams.brand.join(","),
+        productForm: searchParams.productForm.join(","),
+        uses: searchParams.uses.join(","),
+        age: searchParams.age.join(","),
+        price: searchParams.price || "",
       }).toString();
 
       try {
@@ -70,19 +70,19 @@ export default function Page() {
           `https://quickmeds.sndktech.online/product.getTopSelling?${queryParams}`,
           {
             headers: {
-              'x-authorization':
-                'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
+              "x-authorization":
+                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
             },
           }
         );
 
         if (!res.ok) {
-          console.error('Error Status:', res.status);
+          console.error("Error Status:", res.status);
           throw new Error(`Failed to fetch data. Status Code: ${res.status}`);
         }
 
         const data = await res.json();
-        console.log('Fetched Top Selling Data:', data);
+        console.log("Fetched Top Selling Data:", data);
 
         if (data && Array.isArray(data.products)) {
           const mappedData = data.products.map((product: any) => ({
@@ -98,7 +98,7 @@ export default function Page() {
           setTopSellingData([]);
         }
       } catch (err) {
-        console.error('Fetch Error:', err);
+        console.error("Fetch Error:", err);
       } finally {
         setLoading(false);
       }
@@ -134,7 +134,7 @@ export default function Page() {
                   key={brand.value}
                   value={brand.value}
                   checked={searchParams.brand.includes(brand.value)}
-                  onChange={() => handleFilterChange('brand', brand.value)}
+                  onChange={() => handleFilterChange("brand", brand.value)}
                 >
                   {brand.label}
                 </CustomCheckbox>
@@ -152,7 +152,7 @@ export default function Page() {
                   key={form.value}
                   value={form.value}
                   checked={searchParams.productForm.includes(form.value)}
-                  onChange={() => handleFilterChange('productForm', form.value)}
+                  onChange={() => handleFilterChange("productForm", form.value)}
                 >
                   {form.label}
                 </CustomCheckbox>
@@ -170,7 +170,7 @@ export default function Page() {
                   key={use.value}
                   value={use.value}
                   checked={searchParams.uses.includes(use.value)}
-                  onChange={() => handleFilterChange('uses', use.value)}
+                  onChange={() => handleFilterChange("uses", use.value)}
                 >
                   {use.label}
                 </CustomCheckbox>
@@ -188,7 +188,7 @@ export default function Page() {
                   key={age.value}
                   value={age.value}
                   checked={searchParams.age.includes(age.value)}
-                  onChange={() => handleFilterChange('age', age.value)}
+                  onChange={() => handleFilterChange("age", age.value)}
                 >
                   {age.label}
                 </CustomCheckbox>

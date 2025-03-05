@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import Api from "../utils/Api";
 import { header } from "../utils/Api";
 
-const defaultImageUrl = 'placeholder.png';
+const defaultImageUrl = "placeholder.png";
 
 export default function ProductsFilterPage() {
   const [medicines, setMedicines] = useState<any[]>([]); // State to store fetched medicines
@@ -31,7 +31,12 @@ export default function ProductsFilterPage() {
   const [searchQuery, setSearchQuery] = useState<string>(""); // State for search query
   const [sortBy, setSortBy] = useState<number | null>(null); // State for sorting
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
-  const [selectedFilters, setSelectedFilters] = useState<any>({}); // For managing filter values
+  const [selectedFilters, setSelectedFilters] = useState<any>({
+    brand: [],
+    productForm: [],
+    use: [],
+    age: [],
+  }); // For managing filter values
 
   const pathname = usePathname(); // For handling routes dynamically
   const router = useRouter(); // For handling navigation
@@ -44,8 +49,14 @@ export default function ProductsFilterPage() {
       return newFilters;
     });
   };
+
   // Fetch medicines from API
-  const fetchMedicines = async (productName: string = "", sortBy: string = "", sortOrder: "ASC" | "DESC" = "ASC", filters: any = {}) => {
+  const fetchMedicines = async (
+    productName: string = "",
+    sortBy: string = "",
+    sortOrder: "ASC" | "DESC" = "ASC",
+    filters: any = {}
+  ) => {
     setLoading(true);
     setError(null); // Reset error state before a new fetch
 
@@ -58,7 +69,7 @@ export default function ProductsFilterPage() {
 
       // Add filter parameters (brands, forms, uses, etc.)
       Object.keys(filters).forEach((key) => {
-        queryParams.append(key, filters[key].join(',')); // Assuming filters are arrays
+        queryParams.append(key, filters[key].join(",")); // Assuming filters are arrays
       });
 
       const res = await fetch(`${Api.Health}?${queryParams.toString()}`, {
@@ -72,15 +83,17 @@ export default function ProductsFilterPage() {
       const data = await res.json();
       console.log("Fetched Medicines:", data);
       if (data.status && Array.isArray(data.healthProduct)) {
-        const mappedData: Product[] = data.healthProduct.map((product: any) => ({
-          id: product.id,
-          title: product.productName,
-          sellingPrice: product.sellingPrice,
-          actualPrice: product.mrp,
-          isLiked: product.favorite,
-          offer: 70, // Assuming a static offer, can be dynamic if available
-          imgUrl: defaultImageUrl, // Use default if no valid images
-        }));
+        const mappedData: Product[] = data.healthProduct.map(
+          (product: any) => ({
+            id: product.id,
+            title: product.productName,
+            sellingPrice: product.sellingPrice,
+            actualPrice: product.mrp,
+            isLiked: product.favorite,
+            offer: 70, // Assuming a static offer, can be dynamic if available
+            imgUrl: defaultImageUrl, // Use default if no valid images
+          })
+        );
 
         setMedicines(mappedData);
       } else {
@@ -105,23 +118,27 @@ export default function ProductsFilterPage() {
   // Handle Enter key press to trigger search
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      fetchMedicines(searchQuery, sortBy, sortOrder, selectedFilters);  // Fetch medicines based on search query
+      fetchMedicines(searchQuery, sortBy, sortOrder, selectedFilters); // Fetch medicines based on search query
     }
   };
 
- // Handle sorting change (by price or rating)
- const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const [sortField, order] = e.target.value.split("-");  // "price-ASC" or "rating-DESC"
-  setSortBy(sortField);
-  setSortOrder(order as "ASC" | "DESC");
-  fetchMedicines(searchQuery, sortField, order as "ASC" | "DESC", selectedFilters); // Fetch medicines based on new sort
-};
+  // Handle sorting change (by price or rating)
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const [sortField, order] = e.target.value.split("-"); // "price-ASC" or "rating-DESC"
+    setSortBy(sortField);
+    setSortOrder(order as "ASC" | "DESC");
+    fetchMedicines(
+      searchQuery,
+      sortField,
+      order as "ASC" | "DESC",
+      selectedFilters
+    ); // Fetch medicines based on new sort
+  };
 
-
-   // Fetch medicines on initial load or when search query/sort changes
-   useEffect(() => {
-    fetchMedicines(searchQuery, sortBy, sortOrder, selectedFilters);  // Fetch medicines initially
-  }, []);  // Empty dependency array ensures this runs only once after initial mount
+  // Fetch medicines on initial load or when search query/sort changes
+  useEffect(() => {
+    fetchMedicines(searchQuery, sortBy, sortOrder, selectedFilters); // Fetch medicines initially
+  }, []); // Empty dependency array ensures this runs only once after initial mount
 
   // Handle loading and error states
   if (loading) {
@@ -136,11 +153,12 @@ export default function ProductsFilterPage() {
     <div className="">
       <div className="flex flex-col gap-3">
         <p className="text-2xl font-medium">What are you looking for?</p>
-        <GlobalSearchBox placeholder="Search for medicine and health products"
-        value={searchQuery}  // Bind the search query value to the input field
-        onChange={handleSearchChange}  // Call handleSearchChange on input change
-        onKeyDown={handleKeyPress}  // Call handleKeyPress when a key is pressed
-       />
+        <GlobalSearchBox
+          placeholder="Search for medicine and health products"
+          value={searchQuery} // Bind the search query value to the input field
+          onChange={handleSearchChange} // Call handleSearchChange on input change
+          onKeyDown={handleKeyPress} // Call handleKeyPress when a key is pressed
+        />
       </div>
       <div className="grid pt-8 grid-cols-[225px_1fr] gap-8 items-start">
         <div className="rounded-xl max-lg:hidden flex flex-col overflow-hidden">
@@ -167,6 +185,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Brands</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.brand}
                     onChange={(value) => addParamsHandler(value, "brand")}
                   >
                     {dummyBrands.map((brand) => (
@@ -182,6 +201,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Product form</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.productForm}
                     onChange={(value) => addParamsHandler(value, "productForm")}
                   >
                     {dummyProductsForms.map((forms) => (
@@ -197,6 +217,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Uses</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.use}
                     onChange={(value) => addParamsHandler(value, "use")}
                   >
                     {dummyUses.map((uses) => (
@@ -212,6 +233,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Age</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.age}
                     onChange={(value) => addParamsHandler(value, "age")}
                   >
                     {dummyAges.map((ages) => (

@@ -20,7 +20,7 @@ const DonateBanner = () => {
     <div className=" mx-10 my-5  max-md:hidden">
       <ImgTab
         src="/DonateBanner.png"
-        className="h-[400px] w-full"
+        className="h-[300px] w-full"
         onClick={openDonateFormHandler}
       />
       <DialogWrapper
