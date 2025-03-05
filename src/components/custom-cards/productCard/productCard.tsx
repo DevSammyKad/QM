@@ -8,6 +8,10 @@ import { PrimaryButton } from "@/src/ui/buttons/buttons";
 import IconButton from "@/src/ui/buttons/iconButton";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useState } from "react";
+import Api from "@/src/page/utils/Api";
+import { header } from "@/src/page/utils/Api";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type CardType = {
   data: ProductCardType;
@@ -20,7 +24,8 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
     imgUrl,
     sellingPrice,
     title,
-    isLiked,
+    productName,
+    // isLiked,
     offer = 70,
   } = data;
 
@@ -28,8 +33,12 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
   const [imageError, setImageError] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false); // To track if the item is being added to the cart
   const [error, setError] = useState(""); // For error handling
-  // Default 404 image URL (you can replace this with your own 404 image URL)
   const defaultImageUrl = "placeholder.png";
+  // Initialize isLiked from localStorage or use the default value from props
+  const [isLiked, setIsLiked] = useState(() => {
+    const savedIsLiked = localStorage.getItem(`isLiked_${data.id}`);
+    return savedIsLiked === "true" || data.isLiked || false; // Check if it's already saved in localStorage
+  });
 
   // Fallback function for handling image load errors
   const handleImageError = () => {
@@ -59,29 +68,23 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
         return;
       }
 
-      const response = await fetch(
-        "https://quickmeds.sndktech.online/productCart.add",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph", // Authorization token
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzE2NzQ1Mzg1LCJleHAiOjE3NDgzMDI5ODV9.5wRlYbaliLtMW57h7YCASiJZsESXS1Ouo6i48zuIyTI",
-          },
-          body: JSON.stringify({
-            userId: userId, // Add userId to the request body
-            productId: productId,
-            quantity: 1, // Assume 1 quantity for simplicity; you can modify this based on your app's requirements
-          }),
-        }
-      );
+      const response = await fetch(Api.AddToCart, {
+        method: "POST",
+        headers: header,
+        body: JSON.stringify({
+          userId: userId, // Add userId to the request body
+          productId: productId,
+          quantity: 1, // Assume 1 quantity for simplicity; you can modify this based on your app's requirements
+        }),
+      });
 
       const result = await response.json();
 
       // Check if response status is successful
       if (response.ok && result.status === true) {
-        alert(result.message); // Display success message (or handle it in your UI)
+        // alert(result.message); // Display success message (or handle it in your UI)
+        toast.success(result.message || "Item Added To Cart"); // Show success toast
+
         return; // Success, exit the function
       }
 
@@ -92,6 +95,39 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
       setError("An error occurred while adding to cart.");
     } finally {
       setIsAddingToCart(false); // Reset loading state
+    }
+  };
+
+  // Function to toggle the product in the wishlist
+  const handleWishlistToggle = async () => {
+    try {
+      const productId = data.id;
+      if (!productId) {
+        setError("Product ID is missing.");
+        return;
+      }
+
+      const response = await fetch(Api.WishlistToggle, {
+        method: "POST",
+        headers: header,
+        body: JSON.stringify({
+          productId: productId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === true) {
+        setIsLiked(!isLiked); // Toggle the wishlist state
+        localStorage.setItem(`isLiked_${productId}`, (!isLiked).toString()); // Save the new isLiked value in localStorage
+        // alert(result.message); // Display success message (or handle it in your UI)
+        toast.success(result.message || "Product added to Whishlist"); // Show success toast
+      } else {
+        setError(result.message || "Failed to toggle wishlist");
+      }
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+      setError("An error occurred while toggling the wishlist.");
     }
   };
 
@@ -140,7 +176,9 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
           className=" absolute bottom-[-1px] border border-white right-[0px]"
         ></div>
       </div>
-      <IconButton>{isLiked ? <RedHeartSvg /> : <HeartSvg />}</IconButton>
+      <IconButton onClick={handleWishlistToggle}>
+        {isLiked ? <RedHeartSvg /> : <HeartSvg />}
+      </IconButton>
       <div className="flex items-center justify-center">
         <img
           src={imageError ? defaultImageUrl : imgUrl}
@@ -151,7 +189,7 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
       </div>
       <div className="flex flex-col gap-3 pt-3">
         <h2 className="line-clamp-2 font-semibold text-sm leading-5">
-          {title}
+          {title || productName}
         </h2>
         <p className="font-extrabold text-lg ">
           <span>₹{sellingPrice}</span>

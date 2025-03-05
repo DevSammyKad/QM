@@ -113,7 +113,7 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
           </PrimaryButton>
           <p className="text-gray-500">
             New to Quick Meds?{' '}
-            <Link className="text-primary-500" href={'/'}>
+            <Link className="text-primary-500" href={'/sign-up'}>
               Register
             </Link>
           </p>

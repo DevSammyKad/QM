@@ -1,9 +1,9 @@
-"use client";
-import { cn } from "@/cn.config";
-import AuthPageLayout from "@/src/layouts/auth-page-layout";
-import { PrimaryButton } from "@/src/ui/buttons/buttons";
-import FormInput from "@/src/ui/form/form-input";
-import { OTPInput, SlotProps } from "input-otp";
+'use client';
+import { cn } from '@/cn.config';
+import AuthPageLayout from '@/src/layouts/auth-page-layout';
+import { PrimaryButton } from '@/src/ui/buttons/buttons';
+import FormInput from '@/src/ui/form/form-input';
+import { OTPInput, SlotProps } from 'input-otp';
 
 export default function Signup() {
   return (
@@ -32,11 +32,11 @@ function Slot(props: SlotProps) {
   return (
     <div
       className={cn(
-        "relative  h-10 mx-1",
-        "text-shade text-2xl",
-        "flex items-center justify-center",
-        "border-b border-shade",
-        { "": props.isActive }
+        'relative  h-10 mx-1',
+        'text-shade text-2xl',
+        'flex items-center justify-center',
+        'border-b border-shade',
+        { '': props.isActive }
       )}
     >
       {props.char !== null && <div>{props.char}</div>}
