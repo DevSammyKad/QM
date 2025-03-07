@@ -11,9 +11,16 @@ export const header = {
 const Api = {
   WishlistSearch: (query) => `${Main}/product.get?productName=${query}`,
   Wishlist: `${Main}/wishlist.get1`,
-  PopularlabTest: `${Main}/labTest.popularTests`,
+
   TestPackage: `${Main}/testPackage.get`,
   MostBookedTests: `${Main}/labTest.mostBookedTests`,
+
+  PopularlabTest: `${Main}/labTest.popularTests`,
+  LabTest: (id) => `${Main}/labTest.get/${id}`,
+  LabTestCart: (id) => `${Main}/labTestCart.get.byUserId/${id}`,
+  LabTestPatientsByUserID: (userId) => `${Main}/patient.getByUserId/${userId}`,
+  LabTestGetSlotsByLabTestId: (LabTestId) =>
+    `${Main}/slots.get?LebtestId=${LabTestId}`,
 };
 
 export default Api;

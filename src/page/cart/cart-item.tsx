@@ -24,7 +24,8 @@ export default function CartItem({ cartItem }: Props) {
   // Check if variant is defined before accessing properties
   const variant = cartItem.variants;
   const productTitle = cartItem.productName || 'Untitled Product'; // Fallback for title
-  const productImgUrl = cartItem.images || 'default-image-url'; // Fallback for image URL
+  const productImgUrl =
+    cartItem.images || '/public/media/logoicons/medicineImg.png'; // Fallback for image URL
 
   return (
     <div className="grid gap-y-0 grid-cols-[max-content_1fr_max-content]  items-center gap-2 max-sm:gap-0 ">

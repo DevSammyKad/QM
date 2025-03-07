@@ -18,7 +18,7 @@ import Hero from './hero';
 import Api from '../utils/Api';
 import { header } from '../utils/Api';
 import { headers } from 'next/headers';
-import PopularLabTest from '@/src/components/PopularLabTest';
+import PopularLabTest from '@/src/components/PopularLabTestCard';
 import DonateBanner from './DonateBanner';
 
 const defaultImageUrl = 'placeholder.png';

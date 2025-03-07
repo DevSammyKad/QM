@@ -2,6 +2,7 @@ import type {
   ProductCardType,
   PackageCardType,
   CheckupCardType,
-} from "./productTypes";
+  LabTestType,
+} from './productTypes';
 
-export type { ProductCardType, PackageCardType, CheckupCardType };
+export type { ProductCardType, PackageCardType, CheckupCardType, LabTestType };
