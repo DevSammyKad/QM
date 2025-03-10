@@ -63,3 +63,13 @@ export type ProductDetailsType = {
   reviews: ReviewType[];
   ratings: ProductRatingType;
 };
+
+export type LabTestType = {
+  id: number | string;
+  testName: string;
+  sellingPrice: number;
+  mrp: number;
+  description?: string;
+  bannerImage?: string;
+  coverImage?: string;
+};

@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 import {
   dummyAges,
   dummyBrands,
@@ -7,14 +7,15 @@ import {
   dummyProductsForms,
   dummyUses,
   selectOptions,
-} from "@/dummyData";
-import ProductCard from "@/src/components/custom-cards/productCard/productCard";
-import CustomCheckbox from "@/src/ui/checkbox/checkbox";
-import CustomCheckboxGroup from "@/src/ui/checkbox/custom-checkbox-group";
-import GlobalSearchBox from "@/src/ui/searchbox/global-search-box";
-import CustomSelect from "@/src/ui/select/custom-select";
-import { Divider } from "@nextui-org/divider";
-import { SelectItem } from "@nextui-org/select";
+} from '@/dummyData';
+import ProductCard from '@/src/components/custom-cards/productCard/productCard';
+import CustomCheckbox from '@/src/ui/checkbox/checkbox';
+import CustomCheckboxGroup from '@/src/ui/checkbox/custom-checkbox-group';
+import GlobalSearchBox from '@/src/ui/searchbox/global-search-box';
+import CustomSelect from '@/src/ui/select/custom-select';
+import { Divider } from '@nextui-org/divider';
+import { SelectItem } from '@nextui-org/select';
+import Api from '../../utils/Api';
 
 export default function page() {
   // const randomData = dummyProductCardData;
@@ -27,27 +28,23 @@ export default function page() {
     const fetchMostPopularLabTest = async () => {
       try {
         // Fetch the lab test data
-        const res = await fetch(
-          "https://quickmeds.sndktech.online/labTest.popularTests",
-          {
-            headers: {
-              "x-authorization":
-                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph", // Authorization token
-            },
-          }
-        );
+        const res = await fetch(Api.PopularlabTest, {
+          headers: {
+            'x-authorization': 'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph', // Authorization token
+          },
+        });
 
         if (!res.ok) {
           // Handle HTTP errors
-          console.log("Error Status:", res.status);
+          console.log('Error Status:', res.status);
           const errorText = await res.text(); // Read error body if available
-          console.error("Error Details:", errorText);
+          console.error('Error Details:', errorText);
           throw new Error(`Failed to fetch data, Status Code: ${res.status}`);
         }
 
         // Parsing the response JSON
         const data = await res.json();
-        console.log("Fetched Lab Test Data:", data); // Check what the data looks like
+        console.log('Fetched Lab Test Data:', data); // Check what the data looks like
 
         // Handle missing or unexpected data formats
         if (data && Array.isArray(data.labTests)) {
@@ -64,11 +61,11 @@ export default function page() {
 
           setMostPopularLabData(mappedData); // Set the fetched data
         } else {
-          console.error("Products is not an array or missing:", data.labTests);
+          console.error('Products is not an array or missing:', data.labTests);
           setMostPopularLabData([]); // Set empty array if data is not in the expected format
         }
       } catch (err) {
-        console.error("Fetch Error:", err); // Log the error to understand the issue
+        console.error('Fetch Error:', err); // Log the error to understand the issue
         setError(err.message); // Update state with error message
       } finally {
         setLoading(false); // Turn off loading state
@@ -154,7 +151,7 @@ export default function page() {
                   {option.label}
                 </SelectItem>
               ))}
-            </CustomSelect>{" "}
+            </CustomSelect>{' '}
           </div>
           <div className="grid grid-cols-4 justify-items-center max-[1400px]:grid-cols-3 max-[1080px]:grid-cols-2 max-[450px]:grid-cols-1 gap-3 ">
             {randomData.map((data) => (

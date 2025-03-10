@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   dummyBrands,
   dummyProductsForms,
   dummyUses,
   dummyAges,
   selectOptions,
-} from "@/dummyData";
-import ProductCard from "@/src/components/custom-cards/productCard/productCard";
-import CustomCheckbox from "@/src/ui/checkbox/checkbox";
-import CustomCheckboxGroup from "@/src/ui/checkbox/custom-checkbox-group";
-import GlobalSearchBox from "@/src/ui/searchbox/global-search-box";
-import CustomSelect from "@/src/ui/select/custom-select";
-import { Divider } from "@nextui-org/divider";
-import { SelectItem } from "@nextui-org/select";
+} from '@/dummyData';
+import ProductCard from '@/src/components/custom-cards/productCard/productCard';
+import CustomCheckbox from '@/src/ui/checkbox/checkbox';
+import CustomCheckboxGroup from '@/src/ui/checkbox/custom-checkbox-group';
+import GlobalSearchBox from '@/src/ui/searchbox/global-search-box';
+import CustomSelect from '@/src/ui/select/custom-select';
+import { Divider } from '@nextui-org/divider';
+import { SelectItem } from '@nextui-org/select';
 
 export default function Page() {
   const [products, setProducts] = useState([]);
@@ -22,12 +22,12 @@ export default function Page() {
   const [error, setError] = useState(null);
 
   // State for search query and filters
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedProductForms, setSelectedProductForms] = useState([]);
   const [selectedUses, setSelectedUses] = useState([]);
   const [selectedAge, setSelectedAge] = useState([]);
-  const [selectedSort, setSelectedSort] = useState("");
+  const [selectedSort, setSelectedSort] = useState('');
 
   // Fetch products with applied filters
   const fetchProducts = async () => {
@@ -38,20 +38,20 @@ export default function Page() {
       const params = new URLSearchParams();
 
       // Add filters to query parameters
-      if (searchQuery) params.append("productName", searchQuery);
+      if (searchQuery) params.append('productName', searchQuery);
       if (selectedBrands.length)
-        params.append("brand", selectedBrands.join(","));
+        params.append('brand', selectedBrands.join(','));
       if (selectedProductForms.length)
-        params.append("productForm", selectedProductForms.join(","));
-      if (selectedUses.length) params.append("uses", selectedUses.join(","));
-      if (selectedAge.length) params.append("age", selectedAge.join(","));
-      if (selectedSort) params.append("price", selectedSort);
+        params.append('productForm', selectedProductForms.join(','));
+      if (selectedUses.length) params.append('uses', selectedUses.join(','));
+      if (selectedAge.length) params.append('age', selectedAge.join(','));
+      if (selectedSort) params.append('price', selectedSort);
 
       const res = await fetch(
         `https://quickmeds.sndktech.online/product.mostPopular?${params.toString()}`,
         {
           headers: {
-            "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+            'x-authorization': 'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
           },
         }
       );

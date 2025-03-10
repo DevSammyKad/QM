@@ -8,11 +8,12 @@ import { Avatar } from '@nextui-org/avatar';
 import { Button } from '@nextui-org/button';
 import { Divider } from '@nextui-org/divider';
 import FormInput from '@/src/ui/form/form-input';
+import Image from 'next/image';
 
 const page = (profileId: string) => {
   return (
-    <div>
-      <div className="h-full w-7xl flex flex-col shadow-product-card bg-white rounded-lg">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white shadow-md rounded-lg overflow-hidden">
         <div className="flex items-center px-5 py-2 gap-4">
           <BackButtonWrapper>
             <ArrowIcon
@@ -24,6 +25,7 @@ const page = (profileId: string) => {
           </BackButtonWrapper>
           Edit Profile
         </div>
+        {/* Background Header */}
         <div className="relative p-5">
           <div className="w-full h-1/2 bg-primary-500 absolute top-0 left-0 "></div>
           <div className="flex flex-col items-center w-fit gap-2">
@@ -31,78 +33,106 @@ const page = (profileId: string) => {
               src="/user.png"
               className="w-36 h-36 cursor-pointer text-large"
             />
-            <p className="text-xs font-semibold cursor-pointer">
-              Change Profile
-            </p>
+            <div className="text-center mb-4">
+              <button className="text-teal-600 hover:text-teal-800 transition-colors">
+                Change Picture
+              </button>
+            </div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 pb-3">
-          <form className="flex items-center px-5 max-sm:px-1 gap-4 max-sm:gap-1 py-2 justify-between">
-            <UserSvg />
-            <label className="flex-1 max-sm:pl-2">
-              <p className="text-shade text-sm">User Name</p>
-              <FormInput
-                defaultValue={'Ankit'}
+
+        {/* Profile Edit Form */}
+        <div className="px-6 pb-6">
+          <div className="space-y-4">
+            {/* Username Input */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="username"
+              >
+                Username
+              </label>
+              <input
+                id="username"
                 type="text"
-                className={`border-none w-full outline-none `}
+                defaultValue="Fawa khan"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-            </label>
-            <FormInput
-              type="tel"
-              placeholder="Phone +91"
-              maxLength={10}
-              //   value={phoneNumber}
-              //   onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </form>
-          <Divider />
-          <form className="flex items-center px-5 max-sm:px-1 gap-4 max-sm:gap-1 py-2 justify-between">
-            <PhoneSvg />
-            <label className="flex-1 max-sm:pl-2">
-              <p className="text-shade text-sm">Phone number</p>
+            </div>
+
+            {/* Phone Number Input */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="phone"
+              >
+                Phone Number
+              </label>
               <input
+                id="phone"
                 type="tel"
-                maxLength={10}
-                className={`border-none w-full outline-none `}
-                defaultValue={'8295451564'}
+                defaultValue="+91 0987654321"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-            </label>
-            <Button
-              color="secondary"
-              variant="light"
-              className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
-            >
-              Edit
-            </Button>
-          </form>
-          <Divider />
-          <form className="flex items-center px-5 max-sm:px-1 gap-4 max-sm:gap-1 py-2 justify-between">
-            <EmailSvg />
-            <label className="flex-1 max-sm:pl-2">
-              <p className="text-shade text-sm">Email</p>
+            </div>
+
+            {/* Email Input */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="email"
+              >
+                Email
+              </label>
               <input
+                id="email"
                 type="email"
-                className={`border-none w-full outline-none `}
-                defaultValue={'Fawadkhanexample@gmail.com'}
+                defaultValue="Fawadkhanexample@gmail.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
-            </label>
-            <Button
-              color="secondary"
-              variant="light"
-              className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
-            >
-              Edit
-            </Button>
-          </form>
-          <Divider />
-          <div className="flex justify-end w-full px-3 ">
-            <Button
-              className="text-sm w-fit h-fit !rounded py-1"
-              variant="light"
-              color="default"
-            >
-              Reset password
-            </Button>
+            </div>
+
+            {/* Age Input */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="age"
+              >
+                Age
+              </label>
+              <input
+                id="age"
+                type="number"
+                defaultValue="33"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+
+            {/* Gender Input */}
+            <div>
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="gender"
+              >
+                Gender
+              </label>
+              <select
+                id="gender"
+                defaultValue="Male"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* Save Button */}
+            <div className="mt-6">
+              <button className="w-full bg-teal-500 text-white py-2 rounded-md hover:bg-teal-600 transition-colors">
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>
