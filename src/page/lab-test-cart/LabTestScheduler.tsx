@@ -155,6 +155,9 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
           isDefault: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          patientName: patientData.patientName,
+          gender: patientData.gender,
+          dob: patientData.dob,
           age: parseInt(patientData.age, 10),
         };
 
@@ -378,7 +381,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
               </label>
               <input
                 type="text"
-                name="name"
+                name="patientName"
                 value={newPatient.patientName}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-2"

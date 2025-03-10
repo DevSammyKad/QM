@@ -11,11 +11,6 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const userId = 1; // Replace with dynamic user ID if needed
-    fetchLabTestCart(userId);
-  }, []);
-
   const fetchLabTestCart = async (userId: number) => {
     try {
       const response = await fetch(Api.LabTestCart(userId), {
@@ -44,6 +39,11 @@ export default function Page() {
   if (error) {
     return <div className="text-red-500">{error}</div>;
   }
+
+  useEffect(() => {
+    const userId = 1; // Replace with dynamic user ID if needed
+    fetchLabTestCart(userId);
+  }, []);
 
   return (
     <div className="w-full">
