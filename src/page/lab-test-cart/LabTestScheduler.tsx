@@ -13,6 +13,7 @@ interface PatientType {
   id: number;
   userId: number;
   image: string;
+  age: number;
   patientName: string;
   dob: string;
   gender: string;
@@ -20,6 +21,8 @@ interface PatientType {
   createdAt: string;
   updatedAt: string;
 }
+
+const currentUserId = 1; // Replace with actual userId if dynamic
 
 const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
   const [step, setStep] = useState(1);
@@ -31,17 +34,20 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<number | null>(null);
   const [patients, setPatients] = useState<PatientType[]>([]);
 
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientType | null>(
+    null
+  );
   const [showAddNewPatient, setShowAddNewPatient] = useState(false);
 
   // New patient form
   const [newPatient, setNewPatient] = useState({
-    name: '',
+    patientName: '',
     age: '',
-    gender: 'male',
+    gender: '',
     phone: '',
     email: '',
-    address: '',
+    image: 'https://avatar.iran.liara.run/public/32', // Default image if needed
+    userId: currentUserId, // Replace with actual userId if dynamic
   });
 
   const router = useRouter();
@@ -99,26 +105,84 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
     }
   }, [step, fetchPatients]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewPatient({ ...newPatient, [e.target.name]: e.target.value });
+  };
+
   // Handle adding a new patient - replace with actual API call
   const handleAddPatient = async () => {
     try {
       setLoading(true);
-      // Replace with actual API call
-      // const response = await api.post('/patients', newPatient);
-      // const addedPatient = response.data;
+      setError(null);
 
-      // Mock response
-      const addedPatient = {
-        id: Date.now(),
+      const currentYear = new Date().getFullYear();
+      const dobYear = currentYear - parseInt(newPatient.age, 10);
+      const dob = `${dobYear}-01-01`; // Default to Jan 1st
+
+      const patientData = {
         ...newPatient,
+        dob, // Add DOB to match API format
       };
 
-      setPatients([...patients, addedPatient]);
-      setSelectedPatient(addedPatient.id);
-      setShowAddNewPatient(false);
-      setLoading(false);
+      const response = await fetch(Api.LabTestAddPatient, {
+        method: 'POST',
+        headers: {
+          ...header,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(patientData), // Send JSON data
+      });
+
+      if (!response.ok) {
+        // Improved error handling: get the error message from the API
+        const errorData = await response.json(); // Try to parse the JSON error
+        setError(
+          `Failed to add patient: ${response.status} - ${
+            errorData?.message || response.statusText
+          }`
+        );
+        return;
+      }
+
+      const addedPatientResponse = await response.json(); // Get the API response
+      console.log('API Response:', addedPatientResponse);
+
+      if (addedPatientResponse.status === true) {
+        // Extract patient ID from the response
+        const addedPatient: PatientType = {
+          ...patientData,
+          id: addedPatientResponse.id,
+          isDefault: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          age: parseInt(patientData.age, 10),
+        };
+
+        setPatients([...patients, addedPatient]); // Use patients array instead of patientData
+        setSelectedPatient(addedPatient);
+        setShowAddNewPatient(false);
+
+        // Reset form
+        setNewPatient({
+          patientName: '',
+          age: '',
+          gender: '',
+          phone: '',
+          email: '',
+          image: 'https://avatar.iran.liara.run/public/32',
+          userId: currentUserId,
+        });
+      } else {
+        setError(
+          `Failed to add patient: ${
+            addedPatientResponse.message || 'Unknown error'
+          }`
+        );
+      }
     } catch (err) {
+      console.error('Error adding patient:', err);
       setError('Failed to add patient');
+    } finally {
       setLoading(false);
     }
   };
@@ -127,17 +191,56 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      // Replace with actual API call
-      // const bookingData = {
-      //   labTestId,
-      //   patientId: selectedPatient,
-      //   dateId: selectedDate,
-      //   timeSlotId: selectedTimeSlot
-      // };
-      // await api.post('/lab-test-bookings', bookingData);
+      setError(null);
 
-      // Navigate to tracking page
-      router('/tracklabtestpage');
+      if (!selectedPatient) {
+        setError('Please select a patient before proceeding.');
+        setLoading(false);
+        return;
+      }
+
+      if (!selectedDate || !selectedTimeSlot) {
+        setError('Please select a date and time slot.');
+        setLoading(false);
+        return;
+      }
+
+      const bookingData = {
+        userId: currentUserId, // Replace with actual userId
+        labTestId: labTestId, // Replace with actual labTestId
+        patientId: selectedPatient, // Assuming you store selected patients in an array
+        slot_date: selectedDate, // Replace with selected slot date
+        slot_time:
+          timeSlots.find((slot) => slot.id === selectedTimeSlot)?.time || '', // Replace with selected slot time
+        slot_price:
+          timeSlots.find((slot) => slot.id === selectedTimeSlot)?.price || 0, // Replace with actual price
+      };
+
+      const response = await fetch(Api.LabTestBooking, {
+        method: 'POST',
+        headers: {
+          ...header,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(
+          `Failed to schedule: ${errorData?.message || response.statusText}`
+        );
+        return;
+      }
+
+      const result = await response.json();
+      console.log('Booking Success:', result);
+
+      if (result.status === true) {
+        router.push(`/lab-test-booking-summary/${result.id}`); // Redirect to tracking page
+      } else {
+        setError(`Failed to schedule: ${result.message || 'Unknown error'}`);
+      }
     } catch (err) {
       setError('Failed to schedule lab test');
       setLoading(false);
@@ -167,14 +270,6 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
 
     setError(null);
     setStep(step + 1);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewPatient({
-      ...newPatient,
-      [name]: value,
-    });
   };
 
   // Render step 1: Schedule date and time
@@ -249,15 +344,19 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
               <div
                 key={patient.id}
                 className={`border rounded-lg p-4 cursor-pointer ${
-                  selectedPatient === patient.id
+                  selectedPatient?.id === patient.id
                     ? 'border-teal-500 bg-teal-50'
                     : 'border-gray-200'
                 }`}
-                onClick={() => setSelectedPatient(patient.id)}
+                onClick={() =>
+                  setSelectedPatient(
+                    patients.find((p) => p.id === patient.id) || null
+                  )
+                }
               >
-                <div className="font-medium">{patient.name}</div>
+                <div className="font-medium">{patient.patientName}</div>
                 <div className="text-gray-500 text-sm">
-                  {patient.age} years • {patient.gender}
+                  Birth Date •{patient.dob} {patient.gender}
                 </div>
               </div>
             ))}
@@ -280,7 +379,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
               <input
                 type="text"
                 name="name"
-                value={newPatient.name}
+                value={newPatient.patientName}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-2"
                 placeholder="Enter full name"
@@ -386,8 +485,8 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-xl overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+      <div className="bg-white rounded-lg w-full max-w-xl overflow-auto h-[70%] ">
         <div className="p-6 relative">
           <button
             onClick={onClose}

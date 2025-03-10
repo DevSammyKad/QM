@@ -21,6 +21,8 @@ const Api = {
   LabTestPatientsByUserID: (userId) => `${Main}/patient.getByUserId/${userId}`,
   LabTestGetSlotsByLabTestId: (LabTestId) =>
     `${Main}/slots.get?LebtestId=${LabTestId}`,
+  LabTestAddPatient: `${Main}/patient.add`,
+  LabTestBooking: `${Main}/testBooking.add`,
 };
 
 export default Api;
