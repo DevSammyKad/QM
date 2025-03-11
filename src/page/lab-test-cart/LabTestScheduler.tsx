@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 interface LabTestSchedulerProps {
   onClose: () => void;
-  labTestId: string | number;
+  labTestId: number;
 }
 
 interface PatientType {
@@ -22,18 +22,37 @@ interface PatientType {
   updatedAt: string;
 }
 
-const currentUserId = 1; // Replace with actual userId if dynamic
+interface DateSlot {
+  date: string;
+  slotsCount: number;
+}
+
+interface TimeSlot {
+  id: number;
+  time: string;
+  price: number;
+}
+
+// Constants
+const currentUserId = 1; // Replace with actual userId when implemented
+const DEFAULT_AVATAR = 'https://avatar.iran.liara.run/public/32';
 
 const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
+  const router = useRouter();
+
+  // State management
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
-  const [selectedDate, setSelectedDate] = useState('today');
+  // Date & Time selection
+  const [dateSlots, setDateSlots] = useState<DateSlot[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<number | null>(null);
-  const [patients, setPatients] = useState<PatientType[]>([]);
 
+  // Patient selection
+  const [patients, setPatients] = useState<PatientType[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientType | null>(
     null
   );
@@ -46,82 +65,190 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
     gender: '',
     phone: '',
     email: '',
-    image: 'https://avatar.iran.liara.run/public/32', // Default image if needed
-    userId: currentUserId, // Replace with actual userId if dynamic
+    image: DEFAULT_AVATAR,
+    userId: currentUserId,
   });
 
-  const router = useRouter();
+  // Format date display
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
 
-  // Mock data - replace with API calls
-  const dateOptions = [
-    { id: 'today', label: 'Today', slots: 5 },
-    { id: 'tomorrow', label: 'Tomorrow', slots: 12 },
-    { id: 'dayafter', label: 'Sat, 02 mar', slots: 7 },
-  ];
+    // Clone today to avoid mutation issues
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
 
-  const timeSlots = [
-    { id: 1, time: '1:00 pm - 2:00 pm', price: 19 },
-    { id: 2, time: '2:00 pm - 3:00 pm', price: 19 },
-    { id: 3, time: '3:00 pm - 4:00 pm', price: 19 },
-    { id: 4, time: '4:00 pm - 5:00 pm', price: 19 },
-    { id: 5, time: '5:00 pm - 6:00 pm', price: 19 },
-  ];
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
 
-  // Fetch patients - replace with actual API call
-  const fetchPatients = useCallback(async () => {
-    setLoading(true); // Start loading
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+  };
+
+  // API Calls
+  const fetchDateSlots = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await fetch(Api.LabTestPatientsByUserID(1), {
-        method: 'GET', // Use "POST" if required
-        headers: header,
-      });
-
-      console.log('response', response);
+      const response = await fetch(
+        Api.LabTestGetSlotsDateByLabTestId(labTestId),
+        {
+          method: 'GET',
+          headers: header,
+        }
+      );
 
       if (!response.ok) {
-        setError('Failed to fetch patients');
-        return;
+        throw new Error(`Failed to fetch date slots: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Fetched Patients Data:', data);
+      console.log('Fetched Date Slots:', data);
 
-      if (data.patientes) {
-        setPatients(data.patientes); // Use correct key from API response
+      if (data.slots && Array.isArray(data.slots)) {
+        setDateSlots(data.slots);
+      } else {
+        setError('No available date slots found');
+      }
+    } catch (err) {
+      console.error('Error fetching date slots:', err);
+      setError('Failed to load available dates');
+    } finally {
+      setLoading(false);
+    }
+  }, [labTestId]);
+
+  const fetchTimeSlots = useCallback(
+    async (date: string) => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${Api.LabTestGetSlotsTimeByLabTestId(labTestId)}&date=${date}`,
+          {
+            method: 'GET',
+            headers: header,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch time slots: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched Time Slots:', data);
+
+        if (data.slots && Array.isArray(data.slots)) {
+          setTimeSlots(data.slots);
+        } else {
+          setError('No time slots available for the selected date');
+        }
+      } catch (err) {
+        console.error('Error fetching time slots:', err);
+        setError('Failed to load available time slots');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [labTestId]
+  );
+
+  const fetchPatients = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(Api.LabTestPatientsByUserID(currentUserId), {
+        method: 'GET',
+        headers: header,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch patients: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Fetched Patients:', data);
+
+      if (data.patientes && Array.isArray(data.patientes)) {
+        setPatients(data.patientes);
       } else {
         setError('No patients found');
       }
     } catch (err) {
-      console.error('Fetch Error:', err);
-      setError('Error occurred while fetching patients');
+      console.error('Error fetching patients:', err);
+      setError('Failed to load patients');
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   }, []);
 
+  // Effect hooks
   useEffect(() => {
-    if (step === 2) {
+    if (step === 1) {
+      fetchDateSlots();
+    } else if (step === 2) {
       fetchPatients();
     }
-  }, [step, fetchPatients]);
+  }, [step, fetchDateSlots, fetchPatients]);
 
+  useEffect(() => {
+    if (selectedDate) {
+      fetchTimeSlots(selectedDate);
+      setSelectedTimeSlot(null); // Reset time slot when date changes
+    }
+  }, [selectedDate, fetchTimeSlots]);
+
+  // Form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPatient({ ...newPatient, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewPatient((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle adding a new patient - replace with actual API call
-  const handleAddPatient = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const handleDateSelection = (date: string) => {
+    setSelectedDate(date);
+    setError(null);
+  };
 
+  const handleTimeSlotSelection = (slotId: number) => {
+    console.log('Selected time slot ID:', slotId);
+    setSelectedTimeSlot(slotId);
+    setError(null);
+  };
+
+  const handlePatientSelection = (patient: PatientType) => {
+    setSelectedPatient(patient);
+    setError(null);
+  };
+
+  // Add new patient
+  const handleAddPatient = async () => {
+    // Validation
+    if (!newPatient.patientName.trim()) {
+      setError('Patient name is required');
+      return;
+    }
+
+    if (!newPatient.age || isNaN(parseInt(newPatient.age, 10))) {
+      setError('Valid age is required');
+      return;
+    }
+
+    if (!newPatient.gender) {
+      setError('Gender is required');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
       const currentYear = new Date().getFullYear();
       const dobYear = currentYear - parseInt(newPatient.age, 10);
-      const dob = `${dobYear}-01-01`; // Default to Jan 1st
+      const dob = `${dobYear}-01-01`; // Default to Jan 1st of birth year
 
       const patientData = {
         ...newPatient,
-        dob, // Add DOB to match API format
+        dob,
       };
 
       const response = await fetch(Api.LabTestAddPatient, {
@@ -130,38 +257,38 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
           ...header,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(patientData), // Send JSON data
+        body: JSON.stringify(patientData),
       });
 
       if (!response.ok) {
-        // Improved error handling: get the error message from the API
-        const errorData = await response.json(); // Try to parse the JSON error
-        setError(
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
           `Failed to add patient: ${response.status} - ${
             errorData?.message || response.statusText
           }`
         );
-        return;
       }
 
-      const addedPatientResponse = await response.json(); // Get the API response
-      console.log('API Response:', addedPatientResponse);
+      const result = await response.json();
+      console.log('Add Patient Response:', result);
 
-      if (addedPatientResponse.status === true) {
-        // Extract patient ID from the response
+      if (result.status === true) {
+        // Create the patient object from the response
         const addedPatient: PatientType = {
-          ...patientData,
-          id: addedPatientResponse.id,
+          id: result.id,
+          userId: currentUserId,
+          patientName: patientData.patientName,
+          age: parseInt(patientData.age, 10),
+          gender: patientData.gender,
+          dob: patientData.dob,
+          image: patientData.image,
           isDefault: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          patientName: patientData.patientName,
-          gender: patientData.gender,
-          dob: patientData.dob,
-          age: parseInt(patientData.age, 10),
         };
 
-        setPatients([...patients, addedPatient]); // Use patients array instead of patientData
+        // Update state
+        setPatients([...patients, addedPatient]);
         setSelectedPatient(addedPatient);
         setShowAddNewPatient(false);
 
@@ -172,52 +299,59 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
           gender: '',
           phone: '',
           email: '',
-          image: 'https://avatar.iran.liara.run/public/32',
+          image: DEFAULT_AVATAR,
           userId: currentUserId,
         });
       } else {
-        setError(
-          `Failed to add patient: ${
-            addedPatientResponse.message || 'Unknown error'
-          }`
+        throw new Error(
+          `Failed to add patient: ${result.message || 'Unknown error'}`
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error adding patient:', err);
-      setError('Failed to add patient');
+      setError(err.message || 'Failed to add patient');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle final submission
   const handleSubmit = async () => {
+    if (!selectedPatient) {
+      setError('Please select a patient');
+      return;
+    }
+
+    if (!selectedDate) {
+      setError('Please select a date');
+      return;
+    }
+
+    if (selectedTimeSlot === null) {
+      setError('Please select a time slot');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-
-      if (!selectedPatient) {
-        setError('Please select a patient before proceeding.');
-        setLoading(false);
-        return;
-      }
-
-      if (!selectedDate || !selectedTimeSlot) {
-        setError('Please select a date and time slot.');
-        setLoading(false);
-        return;
+      const selectedSlot = timeSlots.find(
+        (slot) => slot.id === selectedTimeSlot
+      );
+      if (!selectedSlot) {
+        throw new Error('Invalid time slot selected');
       }
 
       const bookingData = {
-        userId: currentUserId, // Replace with actual userId
-        labTestId: labTestId, // Replace with actual labTestId
-        patientId: selectedPatient, // Assuming you store selected patients in an array
-        slot_date: selectedDate, // Replace with selected slot date
-        slot_time:
-          timeSlots.find((slot) => slot.id === selectedTimeSlot)?.time || '', // Replace with selected slot time
-        slot_price:
-          timeSlots.find((slot) => slot.id === selectedTimeSlot)?.price || 0, // Replace with actual price
+        userId: currentUserId,
+        labTestId,
+        patientId: selectedPatient.id,
+        slot_date: selectedDate,
+        slot_time: selectedSlot.time,
+        slot_price: selectedSlot.price,
       };
+
+      console.log('Submitting booking data:', bookingData);
 
       const response = await fetch(Api.LabTestBooking, {
         method: 'POST',
@@ -229,101 +363,122 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
           `Failed to schedule: ${errorData?.message || response.statusText}`
         );
-        return;
       }
 
       const result = await response.json();
       console.log('Booking Success:', result);
 
       if (result.status === true) {
-        router.push(`/lab-test-booking-summary/${result.id}`); // Redirect to tracking page
+        router.push(`/lab-test-booking-summary/${result.id}`);
       } else {
-        setError(`Failed to schedule: ${result.message || 'Unknown error'}`);
+        throw new Error(
+          `Failed to schedule: ${result.message || 'Unknown error'}`
+        );
       }
-    } catch (err) {
-      setError('Failed to schedule lab test');
+    } catch (err: any) {
+      console.error('Error submitting booking:', err);
+      setError(err.message || 'Failed to schedule lab test');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleContinue = () => {
-    if (step === 1 && !selectedTimeSlot) {
-      setError('Please select a time slot');
-      return;
-    }
+    if (step === 1) {
+      if (!selectedDate) {
+        setError('Please select a date');
+        return;
+      }
 
-    if (step === 2 && !selectedPatient && !showAddNewPatient) {
-      setError('Please select a patient or add a new one');
-      return;
-    }
+      if (selectedTimeSlot === null) {
+        setError('Please select a time slot');
+        return;
+      }
 
-    if (step === 2 && showAddNewPatient) {
-      handleAddPatient();
-      return;
+      setStep(2);
+      setError(null);
+    } else if (step === 2) {
+      if (showAddNewPatient) {
+        handleAddPatient();
+      } else if (!selectedPatient) {
+        setError('Please select a patient or add a new one');
+      } else {
+        handleSubmit();
+      }
     }
-
-    if (step === 2) {
-      handleSubmit();
-      return;
-    }
-
-    setError(null);
-    setStep(step + 1);
   };
 
-  // Render step 1: Schedule date and time
+  // UI Components
   const renderDateTimeStep = () => (
     <>
       <h2 className="text-2xl font-semibold mb-6">Schedule date and time</h2>
 
+      {/* Date selection */}
       <div className="mb-6">
         <h3 className="text-gray-600 mb-3">Day</h3>
-        <div className="flex gap-3">
-          {dateOptions.map((option) => (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {dateSlots.map((slot, index) => (
             <button
-              key={option.id}
-              className={`border rounded-lg p-4 text-center flex-1 ${
-                selectedDate === option.id
+              key={index}
+              className={`border rounded-lg p-4 text-center flex-1 min-w-[100px] ${
+                selectedDate === slot.date
                   ? 'border-teal-500 bg-teal-50'
                   : 'border-gray-300'
               }`}
-              onClick={() => setSelectedDate(option.id)}
+              onClick={() => handleDateSelection(slot.date)}
             >
-              <div className="font-medium">{option.label}</div>
-              <div className="text-gray-500 text-sm">{option.slots} slots</div>
+              <div className="font-medium">{formatDate(slot.date)}</div>
+              <div className="text-gray-500 text-sm">
+                {slot.slotsCount} slots
+              </div>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Time slot selection */}
       <div className="mb-4">
         <h3 className="text-gray-600 mb-3">Time Slot</h3>
-        <div className="space-y-3">
-          {timeSlots.map((slot) => (
-            <div
-              key={slot.id}
-              className="flex items-center justify-between border-b border-gray-100 pb-3"
-            >
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="timeSlot"
-                  className="h-5 w-5 text-teal-500 mr-3"
-                  checked={selectedTimeSlot === slot.id}
-                  onChange={() => setSelectedTimeSlot(slot.id)}
-                />
-                <span>{slot.time}</span>
-              </label>
-              <span className="text-gray-500">₹{slot.price}</span>
+        {selectedDate ? (
+          timeSlots.length > 0 ? (
+            <div className="space-y-3">
+              {timeSlots.map((slot) => (
+                <div
+                  key={slot.id}
+                  className="flex items-center justify-between border-b border-gray-100 pb-3"
+                >
+                  <label className="flex items-center cursor-pointer w-full">
+                    <input
+                      type="radio"
+                      name="timeSlot"
+                      className="h-5 w-5 text-teal-500 mr-3"
+                      checked={selectedTimeSlot === slot.id}
+                      onChange={() => handleTimeSlotSelection(slot.id)}
+                      value={slot.id}
+                    />
+                    <span className="flex-1">{slot.time}</span>
+                    {slot.price && (
+                      <span className="text-gray-500">₹{slot.price}</span>
+                    )}
+                  </label>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="text-gray-500 italic">
+              No time slots available for selected date
+            </div>
+          )
+        ) : (
+          <div className="text-gray-500 italic">Please select a date first</div>
+        )}
       </div>
 
+      {/* Notes section */}
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <div className="text-gray-600 mb-1">Please note:</div>
         <div className="text-gray-500 text-sm">
@@ -335,36 +490,37 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
     </>
   );
 
-  // Render step 2: Choose Patient
   const renderChoosePatientStep = () => (
     <>
       <h2 className="text-2xl font-semibold mb-6">Choose Patient</h2>
 
       {!showAddNewPatient ? (
         <>
+          {/* Patient list */}
           <div className="space-y-3 mb-6">
-            {patients.map((patient) => (
-              <div
-                key={patient.id}
-                className={`border rounded-lg p-4 cursor-pointer ${
-                  selectedPatient?.id === patient.id
-                    ? 'border-teal-500 bg-teal-50'
-                    : 'border-gray-200'
-                }`}
-                onClick={() =>
-                  setSelectedPatient(
-                    patients.find((p) => p.id === patient.id) || null
-                  )
-                }
-              >
-                <div className="font-medium">{patient.patientName}</div>
-                <div className="text-gray-500 text-sm">
-                  Birth Date •{patient.dob} {patient.gender}
+            {patients.length > 0 ? (
+              patients.map((patient) => (
+                <div
+                  key={patient.id}
+                  className={`border rounded-lg p-4 cursor-pointer ${
+                    selectedPatient?.id === patient.id
+                      ? 'border-teal-500 bg-teal-50'
+                      : 'border-gray-200'
+                  }`}
+                  onClick={() => handlePatientSelection(patient)}
+                >
+                  <div className="font-medium">{patient.patientName}</div>
+                  <div className="text-gray-500 text-sm">
+                    {patient.age} years • {patient.gender}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="text-gray-500 italic">No patients found</div>
+            )}
           </div>
 
+          {/* Add new patient button */}
           <button
             className="w-full border border-teal-500 text-teal-500 rounded-lg p-3 font-medium"
             onClick={() => setShowAddNewPatient(true)}
@@ -373,6 +529,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
           </button>
         </>
       ) : (
+        /* New patient form */
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -386,6 +543,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-2"
                 placeholder="Enter full name"
+                required
               />
             </div>
             <div>
@@ -397,6 +555,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-2"
                 placeholder="Enter age"
+                required
               />
             </div>
           </div>
@@ -468,6 +627,7 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
             />
           </div>
 
+          {/* Form buttons */}
           <div className="flex gap-3 mt-6">
             <button
               className="flex-1 border border-gray-300 rounded-lg p-3"
@@ -478,8 +638,9 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
             <button
               className="flex-1 bg-teal-500 text-white rounded-lg p-3"
               onClick={handleAddPatient}
+              disabled={loading}
             >
-              Add Patient
+              {loading ? 'Adding...' : 'Add Patient'}
             </button>
           </div>
         </div>
@@ -487,10 +648,12 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
     </>
   );
 
+  // Main component render
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
-      <div className="bg-white rounded-lg w-full max-w-xl overflow-auto h-[70%] ">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-xl overflow-auto h-[70%]">
         <div className="p-6 relative">
+          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
@@ -498,15 +661,18 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
             <X />
           </button>
 
+          {/* Error display */}
           {error && (
             <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
               {error}
             </div>
           )}
 
+          {/* Step content */}
           {step === 1 && renderDateTimeStep()}
           {step === 2 && renderChoosePatientStep()}
 
+          {/* Action button */}
           <div className="mt-6">
             <button
               className="w-full bg-teal-500 text-white py-3 rounded-lg font-medium"
@@ -514,7 +680,11 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
               disabled={loading}
               type="button"
             >
-              {loading ? 'Loading...' : 'Continue'}
+              {loading
+                ? 'Processing...'
+                : step === 2 && !showAddNewPatient
+                ? 'Book Appointment'
+                : 'Continue'}
             </button>
           </div>
         </div>

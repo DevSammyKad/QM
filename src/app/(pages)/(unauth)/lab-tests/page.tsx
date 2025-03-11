@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Api, { header } from '../../utils/Api';
 import PopularLabTestCard from '@/src/components/PopularLabTestCard';
 import { LabTestCarousel } from '@/src/components/custom-carousel/lab-test-carousel';
+import LabTestBannerCarousel from '@/src/components/custom-carousel/LabTestBannerCarousel';
 
 // Add these interfaces at the top of the file
 interface LabTest {
@@ -248,10 +249,7 @@ export default function page() {
       <HeroLab />
       <BannersLab bannerData={bannerData} />
 
-      <PackageTitleCarousel
-        title="Doctor curated lab packages"
-        packageData={packageData}
-      />
+      <LabTestBannerCarousel />
 
       <div className="h-[450px] max-lg:px-0  mx-auto max-w-[1920px] flex items-center justify-between gap-5  px-5 bg-hero-pattern bg-no-repeat w-full">
         <ImgTab
@@ -310,14 +308,7 @@ export default function page() {
       </div>
       <BannersLab bannerData={bannerData} />
 
-      <PackageTitleCarousel
-        title="Explore packages"
-        packageData={TestPackageData}
-      />
-      <PackageTitleCarousel
-        title="Find tests by organ"
-        packageData={packageData}
-      />
+      <PackageTitleCarousel title="Lab Tests" packageData={TestPackageData} />
     </div>
   );
 }
