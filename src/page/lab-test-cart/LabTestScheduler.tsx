@@ -7,6 +7,25 @@ import React, { useState, useEffect, useCallback } from 'react';
 interface LabTestSchedulerProps {
   onClose: () => void;
   labTestId: number;
+  cartData: {
+    bannerImage: string;
+    containsMultipleTest: string[];
+    coverImage: string;
+    createdAt: string;
+    description: string;
+    faq: { question: string; answer: string }[];
+    id: number;
+    mrp: number;
+    others: { title: string; description: string }[];
+    preparations: string;
+    quantity: number;
+    recommendedFor: string;
+    sampleRequired: string;
+    sellingPrice: number;
+    testName: string;
+    updatedAt: string;
+    orderId: string;
+  }[];
 }
 
 interface PatientType {
@@ -37,7 +56,11 @@ interface TimeSlot {
 const currentUserId = 1; // Replace with actual userId when implemented
 const DEFAULT_AVATAR = 'https://avatar.iran.liara.run/public/32';
 
-const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
+const LabTestScheduler = ({
+  onClose,
+  labTestId,
+  cartData,
+}: LabTestSchedulerProps) => {
   const router = useRouter();
 
   // State management
@@ -342,13 +365,41 @@ const LabTestScheduler = ({ onClose, labTestId }: LabTestSchedulerProps) => {
         throw new Error('Invalid time slot selected');
       }
 
+      const formattedDOB = selectedPatient.dob.split('-').reverse().join('/');
+
+      console.log('Cart Data:', cartData);
+
+      const totalMRP = cartData.reduce((sum, item) => sum + item.mrp, 0);
+      const totalDiscount = cartData.reduce(
+        (sum, item) => sum + (item.mrp - item.sellingPrice),
+        0
+      );
+      const gstRate = 0.12; // 12% GST
+      const otherServices = totalMRP * gstRate; // GST applied on MRP
+      const totalPayable = totalMRP - totalDiscount + otherServices;
+
       const bookingData = {
         userId: currentUserId,
         labTestId,
-        patientId: selectedPatient.id,
+        patientId: [
+          {
+            patientName: selectedPatient.patientName,
+            dob: formattedDOB, // Ensure the correct date format (DD/MM/YYYY)
+            gender: selectedPatient.gender,
+          },
+        ],
         slot_date: selectedDate,
         slot_time: selectedSlot.time,
         slot_price: selectedSlot.price,
+        orderDate: Date.now(),
+        orderStatus: 'pending',
+        cartMrp: totalMRP,
+        otherServices: otherServices,
+        totalDiscount: totalDiscount,
+        totalPayment: totalPayable,
+        orderId: `${Math.floor(Math.random() * 900000) + 100000}`,
+        sampleCollectionDate: null,
+        sampleCollectionAddress: null,
       };
 
       console.log('Submitting booking data:', bookingData);

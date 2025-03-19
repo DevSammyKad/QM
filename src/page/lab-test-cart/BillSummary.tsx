@@ -1,28 +1,40 @@
 import { Divider } from '@nextui-org/react';
-import React from 'react';
 
-const BillSummary = () => {
+interface BillSummaryProps {
+  cartData: any[]; // Accepts cart data as a prop
+}
+
+const BillSummary = ({ cartData }: BillSummaryProps) => {
+  // Calculate total MRP, discount, and final price
+  const totalMRP = cartData.reduce((sum, item) => sum + item.mrp, 0);
+  const totalDiscount = cartData.reduce(
+    (sum, item) => sum + (item.mrp - item.sellingPrice),
+    0
+  );
+  const gstRate = 0.12; // 12% GST
+  const otherServices = totalMRP * gstRate; // GST applied on MRP
+  const totalPayable = totalMRP - totalDiscount + otherServices;
+
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[22px] font-semibold">Bill summary</p>
+      <p className="text-[22px] font-semibold">Bill Summary</p>
       <div className="text-shade flex flex-col gap-2">
         <p className="flex items-center justify-between gap-3">
-          <span className="">Cart MRP</span>
-          <span className="">₹4398</span>
+          <span>Cart MRP</span>
+          <span>₹{totalMRP.toFixed(2)}</span>
         </p>
         <p className="flex items-center justify-between gap-3">
-          <span className="">Other services</span>
-          <span className="">₹19</span>
+          <span>Other services</span>
+          <span>₹{otherServices.toFixed(2)}</span>
         </p>
         <p className="flex items-center justify-between gap-3">
-          <span className="">Total discount</span>
-          <span className="">-₹2201</span>
+          <span>Total discount</span>
+          <span className="text-red-500">-₹{totalDiscount.toFixed(2)}</span>
         </p>
-
         <Divider />
         <p className="flex text-black font-semibold text-xl items-center justify-between gap-3">
-          <span className=" ">To be paid</span>
-          <span className="">₹2216</span>
+          <span>To be paid</span>
+          <span>₹{totalPayable.toFixed(2)}</span>
         </p>
       </div>
     </div>

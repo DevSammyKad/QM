@@ -1,5 +1,8 @@
+'use client';
+import Api, { header } from '@/src/app/(pages)/utils/Api';
 import { Heart, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 type LabTestCartItemType = {
   id: number;
@@ -23,12 +26,41 @@ type LabTestCartItemType = {
 };
 
 type LabTestCartType = {
-  status: boolean;
   labTestCart: LabTestCartItemType[];
+  onCartUpdate?: () => void;
 };
 
-const defaultImageUrl = 'LabTestDummy.png';
-const CartItems = ({ labTestCart }: LabTestCartType) => {
+const defaultImageUrl = '/LabTestDummy.png';
+const CartItems = ({ labTestCart, onCartUpdate }: LabTestCartType) => {
+  const [deletingItem, setDeletingItem] = useState<number[]>([]);
+
+  const handleRemoveItem = async (cartItemId: number) => {
+    if (deletingItem.includes(cartItemId)) return;
+
+    setDeletingItem((prev) => [...prev, cartItemId]);
+
+    console.log('Removing Lab Test ID:', cartItemId);
+
+    try {
+      const response = await fetch(Api.LabTestRemoveFromCart(cartItemId), {
+        method: 'DELETE',
+        headers: header,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error: ${response.status} - ${errorText}`);
+      }
+
+      toast.success('Item removed from cart');
+      onCartUpdate?.();
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    } finally {
+      setDeletingItem((prev) => prev.filter((id) => id !== cartItemId));
+    }
+  };
+
   return (
     <div>
       {labTestCart.map((item, index) => (
@@ -55,20 +87,18 @@ const CartItems = ({ labTestCart }: LabTestCartType) => {
                   <Heart />
                   Save for later
                 </button>
-                <button className="text-gray-500 text-sm flex items-center gap-1">
-                  <Trash2 />
-                  Remove
+                <button
+                  className="text-gray-500 text-sm flex items-center gap-1"
+                  onClick={() => handleRemoveItem(item.id)}
+                >
+                  <Trash2 /> Remove
                 </button>
               </div>
             </div>
           </div>
           <div className="text-right">
-            <div className="font-bold text-xl">
-              ₹{item.sellingPrice.toFixed(0)}
-            </div>
-            <div className="text-gray-400 line-through">
-              ₹{item.mrp.toFixed(0)}
-            </div>
+            <div className="font-bold text-xl">₹{item.sellingPrice}</div>
+            <div className="text-gray-400 line-through">₹{item.mrp}</div>
           </div>
         </div>
       ))}

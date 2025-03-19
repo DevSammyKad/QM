@@ -15,9 +15,11 @@ const Api = {
   TestPackage: `${Main}/testPackage.get`,
   MostBookedTests: `${Main}/labTest.mostBookedTests`,
 
-  PopularlabTest: `${Main}/labTest.popularTests`,
   // LabTestExplorePackages: `${Main}/labTest.explorePackages`,
 
+  PopularLabTests: `${Main}/labTest.popularTests`,
+  LabTestAddToCart: `${Main}/labTestCart.add`,
+  LabTestRemoveFromCart: (id) => `${Main}/labTestCart.delete/${id}`,
   LabTest: (id) => `${Main}/labTest.get/${id}`,
   LabTestCart: (id) => `${Main}/labTestCart.get.byUserId/${id}`,
   LabTestPatientsByUserID: (userId) => `${Main}/patient.getByUserId/${userId}`,
@@ -29,6 +31,7 @@ const Api = {
   LabTestAddPatient: `${Main}/patient.add`,
   LabTestBooking: `${Main}/testBooking.add`,
   LabTestBookingSummary: (id) => `${Main}/testBooking/${id}`,
+  LabTestTracking: (id) => `${Main}/testBooking/${id}`,
 };
 
 export default Api;

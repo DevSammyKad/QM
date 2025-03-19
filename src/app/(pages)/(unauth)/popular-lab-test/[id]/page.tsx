@@ -12,6 +12,7 @@ import ImgTab from '@/src/components/imgTab/img-tab';
 import QuickMedsLogoSvg from '@/src/icons/quickMedsLogoSvg';
 import CallSvg from '@/src/icons/callSvg';
 import WhatsappIcon from '@/src/icons/whatsappIcon';
+import { useRouter } from 'next/navigation';
 
 // Assuming you're passing `id` and `searchParams` as props
 
@@ -36,7 +37,7 @@ type Props = { params: { id: string }; searchParams: Record<string, unknown> };
 
 export default function Page({ params: { id } }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   // Toggle FAQ item expansion
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
@@ -72,6 +73,41 @@ export default function Page({ params: { id } }: Props) {
   const defaultImageUrl =
     'https://s3-alpha-sig.figma.com/img/57cb/616a/2266f3507ea43402741c8124757f2399?Expires=1742169600&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=FerCjrJON1JPEE4WzySi5gdfO7DBGMphrFBMcRTvFMXHpmXA36EXSCS3rdfgCJzqaH4F8GGT4WCH7Tr0FMWp7ZQ6-3OFb4TDJ4VpjswqhQoFX5too2A~tbJ9ggnG3osZ6FnW5T3wZi4gXclC2hOi66Z4LIB4ED6GePtX9nuzd6kSk0mwbu637-sWr-Tei0HY5PYog-ad9sRygqWp5m5H-jZVR0YQBQcSPMOghJYrZvRrGydV-BXeSBs-OeqF2gVsHi7ScLDO~SvDRm6gJQ3o~WzOEAVJ1vjwfXbc5UxHyQ6CCKpMmsWQTrL3Xz7zDTlMbC4ucYIB4kEJTSI4d9Uszw__';
 
+  const currentUserId = 1;
+  const router = useRouter();
+  const handleAddToCart = async () => {
+    try {
+      setIsLoading(true);
+
+      const requestBody = {
+        userId: currentUserId, // Assuming currentUserId is available in your component
+        labTestId: parseInt(id),
+        quantity: 1,
+      };
+      const response = await fetch(Api.LabTestAddToCart, {
+        method: 'POST',
+        headers: {
+          ...header,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add test to cart');
+      }
+
+      const data = await response.json();
+
+      // Optional: Show success message or redirect to cart
+      console.log('Added to cart successfully', data);
+      router.push('/lab-test-cart');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div>
       {/* <BreadCrumbs currentPathName={labTestData?.testName} /> */}
@@ -309,8 +345,14 @@ export default function Page({ params: { id } }: Props) {
             </div>
           </div>
           <div className="flex flex-col gap-2 max-sm:gap-0">
-            <PrimaryButton className="rounded-3xl py-3 mt-2 max-sm:py-2 font-semibold justify-start">
-              <p className="flex-1 text-center">Book</p>
+            <PrimaryButton
+              className="rounded-3xl py-3 mt-2 max-sm:py-2 font-semibold justify-start"
+              onClick={handleAddToCart}
+              disabled={isLoading}
+            >
+              <p className="flex-1 text-center">
+                {isLoading ? 'Adding...' : 'Book'}
+              </p>
             </PrimaryButton>
           </div>
         </div>

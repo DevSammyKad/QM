@@ -47,28 +47,29 @@ const LabTestBannerCarousel = () => {
   const banners = [
     {
       id: 'vein-finder',
-      image: '/lab-test-1.jpg', // Replace with actual path
-      link: '/book/vein-finder',
+      image:
+        'https://s3-alpha-sig.figma.com/img/ea24/bd3d/5a6c88372e0df6911f9521584641f90d?Expires=1742774400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=X3~jmYsz2piFSu5V8L2bevDeu2xUbftBGJIob53llo-gOTC771IeAziXRUGo2C9k~R-XiM2~5NpEmnKle3-8rUjwqIyq58IZ~Q69AlRlJMb0RWWColDuVI~oE7HHPhG~ISQyUHClAjSxdFxTQSWNC~a93C8TBb1BpBqqoXyZFtQj6Ovgt42s5BjF0sJbfYPsujw8re~nSaMB3XlOqwLspnINuQnqj30mlWfNlCqicTpPVB9F5-r0iau2VJuhiJH8xifpKkf7RalT65QJBLmsdwjJ2zMR9~z9~nxlz~2qULP4liGQbI8DxMHeRv~FyMJ0ECmPFHk95M-TpEZqchNvpw__', // Replace with actual path
+      link: '/popular-lab-test',
     },
     {
       id: 'sample-collection',
-      image: '/lab-test-2.jpg', // Replace with actual path
-      link: '/book/sample-collection',
+      image: '/LabTestBanner1.png', // Replace with actual path
+      link: '/popular-lab-test',
     },
     {
       id: 'chest-pain',
-      image: '/lab-test-3.jpg', // Replace with actual path
-      link: '/book/troponin-test',
+      image: '/LabTestBanner2.png', // Replace with actual path
+      link: '/popular-lab-test',
     },
     {
       id: 'diabetes',
-      image: '/lab-test-4.jpg', // Replace with actual path
-      link: '/book/diabetes',
+      image: '/LabTestBanner1.png', // Replace with actual path
+      link: '/popular-lab-test',
     },
     {
       id: 'thyroid',
-      image: '/lab-test-5.jpg', // Replace with actual path
-      link: '/book/thyroid',
+      image: '/LabTestBanner2.png', // Replace with actual path
+      link: '/popular-lab-test',
     },
   ];
 
@@ -86,7 +87,7 @@ const LabTestBannerCarousel = () => {
                   <img
                     src={banner.image}
                     alt="Lab test banner"
-                    className="w-full h-auto object-cover aspect-[4/3]"
+                    className="w-full h-auto object-cover aspect-3/2"
                   />
                 </div>
               </Link>

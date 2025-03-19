@@ -1,10 +1,10 @@
-"use client";
-import { EmblaOptionsType } from "embla-carousel";
-import useEmblaCarousel from "embla-carousel-react";
-import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
-import { ReactNode } from "react";
-import "./custom.css";
-import { NextButton, PrevButton, usePrevNextButtons } from "./prevBtn";
+'use client';
+import { EmblaOptionsType } from 'embla-carousel';
+import useEmblaCarousel from 'embla-carousel-react';
+import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
+import { ReactNode } from 'react';
+import './custom.css';
+import { NextButton, PrevButton, usePrevNextButtons } from './prevBtn';
 type PropType = {
   slideDataLength: number;
   options?: EmblaOptionsType;
@@ -13,7 +13,7 @@ type PropType = {
   renderProp: () => ReactNode;
 };
 
-const OPTIONS: EmblaOptionsType = { align: "start", dragFree: true, axis: "x" };
+const OPTIONS: EmblaOptionsType = { align: 'start', dragFree: true, axis: 'x' };
 
 const Carousel = (props: PropType) => {
   const {

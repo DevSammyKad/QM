@@ -1,17 +1,17 @@
-"use client";
+'use client';
 /* eslint-disable @next/next/no-img-element */
-import { Routes } from "@/routes.config";
-import HeartSvg from "@/src/icons/heartSvg";
-import RedHeartSvg from "@/src/icons/redHeartSvg";
-import { ProductCardType } from "@/src/types";
-import { PrimaryButton } from "@/src/ui/buttons/buttons";
-import IconButton from "@/src/ui/buttons/iconButton";
-import { useRouter } from "next/navigation";
-import { MouseEvent, useState } from "react";
-import Api from "@/src/page/utils/Api";
-import { header } from "@/src/page/utils/Api";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Routes } from '@/routes.config';
+import HeartSvg from '@/src/icons/heartSvg';
+import RedHeartSvg from '@/src/icons/redHeartSvg';
+import { ProductCardType } from '@/src/types';
+import { PrimaryButton } from '@/src/ui/buttons/buttons';
+import IconButton from '@/src/ui/buttons/iconButton';
+import { useRouter } from 'next/navigation';
+import { MouseEvent, useState } from 'react';
+import Api from '@/src/page/utils/Api';
+import { header } from '@/src/page/utils/Api';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 type CardType = {
   data: ProductCardType;
@@ -32,12 +32,12 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
   // State to handle image loading error
   const [imageError, setImageError] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false); // To track if the item is being added to the cart
-  const [error, setError] = useState(""); // For error handling
-  const defaultImageUrl = "placeholder.png";
+  const [error, setError] = useState(''); // For error handling
+  const defaultImageUrl = 'placeholder.png';
   // Initialize isLiked from localStorage or use the default value from props
   const [isLiked, setIsLiked] = useState(() => {
     const savedIsLiked = localStorage.getItem(`isLiked_${data.id}`);
-    return savedIsLiked === "true" || data.isLiked || false; // Check if it's already saved in localStorage
+    return savedIsLiked === 'true' || data.isLiked || false; // Check if it's already saved in localStorage
   });
 
   // Fallback function for handling image load errors
@@ -46,30 +46,30 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
   };
 
   const router = useRouter();
-  const handleCardKlik = (e: MouseEvent) => {
+  const handleCardLink = (e: MouseEvent) => {
     e.stopPropagation();
-    router.push(Routes.medicines + "/" + encodeURIComponent(title));
+    router.push(Routes.medicines + '/' + encodeURIComponent(title));
   };
 
   // Add to Cart function
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
-    setError(""); // Reset the error state before trying to add
+    setError(''); // Reset the error state before trying to add
     try {
       const userId = 4; // Replace with actual user ID from authentication context/session
       if (!userId || !data.id) {
-        setError("User ID or Product ID is missing.");
+        setError('User ID or Product ID is missing.');
         return;
       }
 
       const productId = data.id;
       if (!productId) {
-        setError("Product ID is missing.");
+        setError('Product ID is missing.');
         return;
       }
 
       const response = await fetch(Api.AddToCart, {
-        method: "POST",
+        method: 'POST',
         headers: header,
         body: JSON.stringify({
           userId: userId, // Add userId to the request body
@@ -83,16 +83,16 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
       // Check if response status is successful
       if (response.ok && result.status === true) {
         // alert(result.message); // Display success message (or handle it in your UI)
-        toast.success(result.message || "Item Added To Cart"); // Show success toast
+        toast.success(result.message || 'Item Added To Cart'); // Show success toast
 
         return; // Success, exit the function
       }
 
       // Handle errors if response status is not success
-      setError(result.message || "Failed to add item to cart"); // Update error state
+      setError(result.message || 'Failed to add item to cart'); // Update error state
     } catch (err) {
-      console.error("Error adding to cart:", err);
-      setError("An error occurred while adding to cart.");
+      console.error('Error adding to cart:', err);
+      setError('An error occurred while adding to cart.');
     } finally {
       setIsAddingToCart(false); // Reset loading state
     }
@@ -103,12 +103,12 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
     try {
       const productId = data.id;
       if (!productId) {
-        setError("Product ID is missing.");
+        setError('Product ID is missing.');
         return;
       }
 
       const response = await fetch(Api.WishlistToggle, {
-        method: "POST",
+        method: 'POST',
         headers: header,
         body: JSON.stringify({
           productId: productId,
@@ -121,21 +121,21 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
         setIsLiked(!isLiked); // Toggle the wishlist state
         localStorage.setItem(`isLiked_${productId}`, (!isLiked).toString()); // Save the new isLiked value in localStorage
         // alert(result.message); // Display success message (or handle it in your UI)
-        toast.success(result.message || "Product added to Whishlist"); // Show success toast
+        toast.success(result.message || 'Product added to Whishlist'); // Show success toast
       } else {
-        setError(result.message || "Failed to toggle wishlist");
+        setError(result.message || 'Failed to toggle wishlist');
       }
     } catch (err) {
-      console.error("Error toggling wishlist:", err);
-      setError("An error occurred while toggling the wishlist.");
+      console.error('Error toggling wishlist:', err);
+      setError('An error occurred while toggling the wishlist.');
     }
   };
 
   return (
     <div
-      onClick={handleCardKlik}
+      onClick={handleCardLink}
       className={`border bg-white  cursor-pointer  ${
-        forCarousel ? "min-w-[220px]" : "w-full"
+        forCarousel ? 'min-w-[220px]' : 'w-full'
       }  relative shadow-product-card px-3 rounded-3xl py-4`}
     >
       <div className="bg-[#F26522] overflow-visible text-[10px] font-bold text-white absolute top-[15px] left-[-8px]  p-1  rounded-tl-md rounded-[2px]">
@@ -159,9 +159,9 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
           style={{
             width: 0,
             height: 0,
-            borderStyle: "solid",
-            borderWidth: "0 10px 10px 0",
-            borderColor: "transparent white transparent transparent",
+            borderStyle: 'solid',
+            borderWidth: '0 10px 10px 0',
+            borderColor: 'transparent white transparent transparent',
           }}
           className=" absolute top-[-1px] right-[0px]"
         ></div>
@@ -169,9 +169,9 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
           style={{
             width: 0,
             height: 0,
-            borderStyle: "solid",
-            borderWidth: " 0  0 10px 10px",
-            borderColor: "transparent transparent  white transparent",
+            borderStyle: 'solid',
+            borderWidth: ' 0  0 10px 10px',
+            borderColor: 'transparent transparent  white transparent',
           }}
           className=" absolute bottom-[-1px] border border-white right-[0px]"
         ></div>
@@ -195,13 +195,13 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
           <span>₹{sellingPrice}</span>
           <s className="pl-1 opacity-60">₹{actualPrice}</s>
         </p>
-        {error && <p className="text-red-500 text-sm">{error}</p>}{" "}
+        {error && <p className="text-red-500 text-sm">{error}</p>}{' '}
         {/* Display error message */}
         <PrimaryButton
           onClick={handleAddToCart}
           disabled={isAddingToCart} // Disable the button while adding to cart
         >
-          {isAddingToCart ? "Adding..." : "Add to Cart"}
+          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
         </PrimaryButton>
       </div>
     </div>

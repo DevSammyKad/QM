@@ -1,108 +1,96 @@
-import React, { FormEvent, useEffect, useState } from 'react';
-// import styles from '../styles/checkout.module.css';
-import {
-  useHyper,
-  useWidgets,
-  UnifiedCheckout,
-} from '@juspay-tech/react-hyper-js';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const CheckoutForm: React.FC = ({}) => {
-  const hyper = useHyper();
-  const widgets = useWidgets();
+const CheckoutForm = () => {
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null); // Stores the PayU payment URL
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error state
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
-  const [message, setMessage] = useState('');
+  const amount = 250; // Update amount
+  const contact = '1234567890'; // Update contact number
+  const url = process.env.NEXT_PUBLIC_BASE_URL; // Ensure this is set in your .env file
 
-  const unifiedCheckoutOptions = {
-    wallets: {
-      walletReturnUrl: 'http://localhost:3000',
-    },
-  };
-
-  const handlePaymentStatus = (status: string) => {
-    switch (status) {
-      case 'succeeded':
-        setMessage('Successful');
-        break;
-      case 'processing':
-        setMessage('Your payment is processing.');
-        break;
-      case 'requires_payment_method':
-        setMessage('Your payment was not successful, please try again.');
-        break;
-      case '':
-        break;
-      default:
-        setMessage('Something went wrong.');
-        break;
-    }
+  const data = {
+    txnid: 'id_of_item_purchased', // Replace with actual transaction ID
+    amount: amount.toFixed(2), // Float
+    productinfo: 'desc_of_item', // Replace with actual product info
+    firstname: 'buyer_first_name', // Replace with actual buyer's first name
+    email: 'buyer_email', // Replace with actual buyer's email
   };
 
   useEffect(() => {
-    if (!hyper) {
-      return;
+    if (paymentUrl) {
+      // Redirect to PayU payment gateway
+      window.location.href = paymentUrl;
     }
+  }, [paymentUrl]);
 
-    const clientSecret = new URLSearchParams(window.location.search).get(
-      'payment_intent_client_secret'
-    );
-
-    if (!clientSecret) {
-      return;
-    }
-
-    hyper.retrievePaymentIntent(clientSecret).then((resp: any) => {
-      const status = resp?.paymentIntent?.status;
-      if (status) {
-        handlePaymentStatus(resp?.paymentIntent?.status);
-      }
-    });
-  });
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const makePayment = async () => {
     setIsLoading(true);
+    setError(null);
 
-    const response = await hyper.confirmPayment({
-      widgets,
-      confirmParams: {
-        // Make sure to change this to your payment completion page
-        return_url: 'http://localhost:3000',
-      },
-      redirect: 'if_required',
-    });
+    try {
+      // Step 1: Generate hash value
+      const reshash = await axios.post(
+        `${url}/api/payment`,
+        JSON.stringify(data),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-    if (response) {
-      if (response.status === 'succeeded') {
-        setMessage('Payment Successful');
-      } else if (response.error) {
-        setMessage(response.error.message);
-      } else {
-        setMessage('An unexpected error occurred.');
-      }
-    } else {
-      setMessage('An unexpected error occurred.');
+      // Step 2: Prepare payment data
+      const pd = {
+        key: 'your_test_key', // Replace with your PayU test key
+        txnid: data.txnid,
+        amount: data.amount,
+        firstname: data.firstname,
+        email: data.email,
+        phone: contact,
+        productinfo: data.productinfo,
+        surl: `${url}/api/response/test`, // Success URL
+        furl: `${url}/api/response/failure`, // Failure URL
+        hash: reshash.data.hash, // Hash value from the API
+        service_provider: 'payu_paisa',
+      };
+
+      // Step 3: Get the PayU payment URL
+      const res = await axios.post(`${url}/api/response`, JSON.stringify(pd), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Set the payment URL to trigger the redirect
+      setPaymentUrl(res.data);
+    } catch (err) {
+      console.error('Payment Error:', err);
+      setError('Failed to process payment. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    setIsPaymentCompleted(true);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Heyy </h1>
-      <UnifiedCheckout id="unified-checkout" options={unifiedCheckoutOptions} />
+    <div>
       <button
-        // className={styles.button}
-        disabled={!hyper || !widgets || isPaymentCompleted}
+        onClick={makePayment}
+        disabled={isLoading}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: isLoading ? '#ccc' : '#0070f3',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: isLoading ? 'not-allowed' : 'pointer',
+        }}
       >
-        {isLoading ? <div className="" id="spinner"></div> : <>Pay Now</>}
+        {isLoading ? 'Processing...' : 'Proceed to PayU Payment'}
       </button>
-      {/* Show any error or success messages */}
-      {message && <div id="payment-message">{message}</div>}
-    </form>
+      {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+    </div>
   );
 };
 

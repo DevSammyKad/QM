@@ -13,12 +13,14 @@ export default function Page() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchLabTestCart(currentUserId);
+    fetchLabTestCart();
   }, []);
 
-  const fetchLabTestCart = async (userId: number) => {
+  // ✅ No need for `userId` argument, use `currentUserId` inside function
+  const fetchLabTestCart = async () => {
     try {
-      const response = await fetch(Api.LabTestCart(userId), {
+      setLoading(true);
+      const response = await fetch(Api.LabTestCart(currentUserId), {
         method: 'GET',
         headers: header,
       });
@@ -28,7 +30,7 @@ export default function Page() {
       }
 
       const data = await response.json();
-      console.log(data);
+      console.log('Fetched Cart Data:', data);
       setLabTestCartData(data.labTestCart || []);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -54,7 +56,11 @@ export default function Page() {
               <p className="text-2xl font-semibold">
                 {labTestCartData.length} items added
               </p>
-              <CartItems labTestCart={labTestCartData} status={true} />
+              <CartItems
+                labTestCart={labTestCartData}
+                onCartUpdate={fetchLabTestCart}
+              />
+              ;
               {/* {labTestCartData.map((cartItem) => (
                 <CartItem key={cartItem.id} cartItem={cartItem} />
               ))} */}

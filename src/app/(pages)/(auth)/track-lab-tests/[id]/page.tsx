@@ -23,26 +23,25 @@ const page = () => {
 
           <div className="border-t border-gray-100">
             {/* First Product */}
-            {data.map((order) => (
-              <div className="flex p-4 border-b border-gray-100">
-                <div className="w-16 h-16 relative mr-4">
+            {data.map((item, index) => (
+              <div key={index} className="flex items-center  border-t p-4">
+                <div className="w-20 h-20 mr-4 bg-gray-100 rounded-md overflow-hidden relative">
                   <Image
-                    src={order.imgUrl}
-                    alt={order.title}
-                    fill
-                    className="object-contain"
+                    src={item.imgUrl}
+                    alt="Medical test"
+                    width={80}
+                    height={80}
+                    className="object-cover"
                   />
                 </div>
-
-                <div className="flex-1">
-                  <h3 className="font-medium text-sm mb-1">{order.title}</h3>
-                  <p className="text-orange-500 text-xs mb-1">{order.title}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold">₹{order.sellingPrice}</span>
-                    <span className="text-gray-400 line-through text-sm">
-                      ₹{order.actualPrice}
-                    </span>
-                  </div>
+                <div className="flex-grow">
+                  <h3 className="font-medium">{item.title}</h3>
+                  <p className="text-sm text-orange-500">
+                    E-report by {item.title}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">₹{item.sellingPrice}</p>
                 </div>
               </div>
             ))}
