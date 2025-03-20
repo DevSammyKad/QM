@@ -1,146 +1,193 @@
 'use client';
-import { Routes } from '@/routes.config';
 import CrossSvg from '@/src/icons/crossSvg';
-import Address from '@/src/page/cart/address';
-import Bill from '@/src/page/cart/bill';
-import Coupons from '@/src/page/cart/coupons';
 import OrderConfirmPopUp from '@/src/page/payment-page/OrderConfirmPopUp';
 import { PrimaryButton } from '@/src/ui/buttons/buttons';
 import DialogWrapper from '@/src/ui/dialog-wrapper.tsx/dialog-wrapper';
 import { Divider } from '@nextui-org/react';
-import Link from 'next/link';
-import { loadHyper } from '@juspay-tech/hyper-js';
+import { useEffect, useState } from 'react';
+import { load } from '@cashfreepayments/cashfree-js';
+import Api, { header } from '../../utils/Api';
+import BillSummary from '@/src/page/lab-test-cart/BillSummary';
 
-import React, { useEffect, useState } from 'react';
+interface TestBooking {
+  id: number;
+  userId: number;
+  labTestId: string;
+  patientId: string; // JSON string; consider parsing if needed
+  sampleCollectionDate: string;
+  sampleCollectionAddress: string | null;
+  note: string | null;
+  otherDetails: string | null;
+  status: string;
+  slot_price: string | null;
+  slot_time: string;
+  slot_date: string;
+  isDefault: boolean;
+  cancelReason: string | null;
+  cartMrp: string;
+  otherServices: string;
+  totalDiscount: string;
+  totalPayment: string;
+  orderId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  image: string;
+}
 
-import {
-  HyperElements,
-  useHyper,
-  useWidgets,
-} from '@juspay-tech/react-hyper-js';
-import CheckoutForm from '@/src/page/payment-page/checkout-form';
+const PaymentPage = () => {
+  const [openOrderConfirmPopUp, setOpenOrderConfirmPopUp] = useState(false);
+  const [cashfree, setCashfree] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [cartData, setCartData] = useState<TestBooking | null>(null);
 
-const page = () => {
-  const [options, setOptions] = useState(null);
-  const [clientSecret, setClientSecret] = useState();
-  const [message, setMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const BookingId = 317;
 
-  const [openOrderConfirmPopUp, setOpenOrderConfirmPopUp] =
-    useState<boolean>(false);
-  const openOrderConfirmPopUpHandler = () => {
-    setOpenOrderConfirmPopUp(true);
-  };
-  const closeOrderConfirmPopUpHandler = () => {
-    setOpenOrderConfirmPopUp(false);
+  useEffect(() => {
+    if (!BookingId) return;
+    fetchLabTestBookingSummary(BookingId);
+  }, [BookingId]);
+
+  console.log('Payment Working');
+
+  const fetchLabTestBookingSummary = async (BookingId: number) => {
+    try {
+      const response = await fetch(Api.LabTestBookingSummary(BookingId), {
+        method: 'GET',
+        headers: header,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch cart data');
+      }
+
+      const data = await response.json();
+      console.log('Booking Summary Data', data.TestBooking);
+
+      if (!data.TestBooking) {
+        throw new Error('Could not find booking data');
+      }
+
+      setCartData(data.TestBooking); // Ensure it's correctly assigned
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    // Create PaymentIntent as soon as the page loads
-    fetch('/create-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: [{ id: 'xl-tshirt' }], country: 'US' }),
-    })
-      .then((res) => res.json())
-      .then((data) => setClientSecret(data.clientSecret));
+    const initializeSDK = async () => {
+      const sdk = await load({ mode: 'sandbox' }); // Change to 'production' when live
+      setCashfree(sdk);
+    };
+    initializeSDK();
   }, []);
 
-  const hyperPromise = loadHyper('YOUR_PUBLISHABLE_KEY', {
-    customBackendUrl: 'https://quickmeds.sndktech.online',
-    //You can configure this as an endpoint for all the api calls such as session, payments, confirm call.
-  });
+  const handlePayment = async () => {
+    setLoading(true);
+    console.log('Cart Payment Data: ', cartData);
 
-  // const handleSubmit = async (e) => {
-  //   setMessage('');
-  //   //e.preventDefault();
+    if (!cartData || !cartData.totalPayment) {
+      console.error('Total payment amount is missing or invalid.');
+      alert('Total payment amount is missing or invalid.');
+      return;
+    }
+    const orderId = cartData.orderId;
+    const orderAmount = parseFloat(cartData.totalPayment); // Ensure it's
+    try {
+      const response = await fetch('/api/create-payment-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_amount: orderAmount.toFixed(2),
+          order_currency: 'INR',
+          order_id: orderId,
+          customer_details: {
+            customer_id: 'devstudio_user',
+            customer_phone: '8474090589',
+          },
+          order_meta: {
+            return_url: `https://www.cashfree.com/devstudio/preview/pg/web/checkout?order_id=${orderId}`,
+          },
+        }),
+      });
 
-  //   if (!hyper || !widgets) {
-  //     return;
-  //   }
-  //   setIsLoading(true);
+      const data = await response.json();
+      if (response.ok && data.payment_session_id) {
+        setSessionId(data.payment_session_id);
+        console.log('Payment Session ID:', data.payment_session_id);
 
-  //   const { error, status } = await hyper.confirmPayment({
-  //     elements,
-  //     confirmParams: {
-  //       // Make sure to change this to your payment completion page
-  //       return_url: 'https://example.com/complete',
-  //     },
-  //     redirect: 'always', // if you wish to redirect always, otherwise it is defaulted to "if_required"
-  //   });
+        // Proceed with payment
+        if (cashfree) {
+          const result = await cashfree.checkout({
+            paymentSessionId: data.payment_session_id,
+            redirectTarget: '_modal',
+          });
 
-  //   if (error) {
-  //     if (error.type === 'card_error' || error.type === 'validation_error') {
-  //       setMessage(error.message);
-  //     } else {
-  //       if (error.message) {
-  //         setMessage(error.message);
-  //       } else {
-  //         setMessage('An unexpected error occurred.');
-  //       }
-  //     }
-  //   }
-  //   if (status) {
-  //     handlePaymentStatus(status); //handle payment status
-  //   }
-  //   setIsLoading(false);
-  // };
+          if (result.error) {
+            console.error('Payment Error:', result.error);
+          } else if (result.redirect) {
+            console.log('Redirecting for payment...');
+          } else if (result.paymentDetails) {
+            console.log(
+              'Payment Completed:',
+              result.paymentDetails.paymentMessage
+            );
+            setOpenOrderConfirmPopUp(true); // Open Order Confirmation Popup
+          }
+        }
+      } else {
+        console.error('Order creation failed:', data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
 
-  const hyper = useHyper();
-  const widgets = useWidgets();
+    setLoading(false);
+  };
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center px-6 py-8 bg-gray-50">
+      {/* Payment Success Dialog */}
       <DialogWrapper
         open={openOrderConfirmPopUp}
-        onClose={closeOrderConfirmPopUpHandler}
+        onClose={() => setOpenOrderConfirmPopUp(false)}
         closeBtnIcon={<CrossSvg />}
         className="md:w-[45%] px-6 py-4 rounded-xl"
         backgroundScroll="hidden"
       >
         <OrderConfirmPopUp />
       </DialogWrapper>
-      <div className="grid  md:grid-cols-2  gap-10 ">
-        <div>Payment Option Show Her dynamic</div>
-        <div className="flex flex-col gap-6">
-          <Coupons />
-          <Divider className="h-1" />
-          <Bill />
-          <Divider className="h-1" />
-          <Address />
 
-          <div className="App">
-            {/* <HyperElements options={options} hyper={hyperPromise}>
-              <h1>Hey Opened</h1>
-            </HyperElements> */}
+      {/* Payment Container */}
+      <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg text-center">
+        <h2 className="text-2xl font-semibold mb-6">Complete Your Payment</h2>
+        {cartData ? (
+          <BillSummary
+            cartMrp={cartData.cartMrp}
+            otherServices={cartData.otherServices}
+            totalDiscount={cartData.totalDiscount}
+            totalPayment={cartData.totalPayment}
+          />
+        ) : (
+          <p>Loading bill details...</p>
+        )}
 
-            <CheckoutForm />
+        <Divider className="h-1 my-4" />
 
-            {/* <PaymentElement
-              id="payment-element"
-              options={options}
-              onPaymentButtonClick={() => {
-                console.log('This is a SYNC CLICK');
-                // Add any custom logic for when the payment button is clicked, such as logging or tracking
-              }}
-              onPaymentComplete={() => {
-                console.log('OnPaymentComplete');
-                // Add any custom post-payment logic here, such as redirection or displaying a success message
-              }}
-            /> */}
-          </div>
-          {/* <Link href={Routes.payment}> */}
-          <PrimaryButton
-            className="rounded-2xl"
-            onClick={openOrderConfirmPopUpHandler}
-          >
-            Pay & Order place
-          </PrimaryButton>
-          {/* </Link> */}
-        </div>
+        <PrimaryButton
+          className="rounded-2xl w-full py-3 text-lg"
+          onClick={handlePayment}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : 'Pay & Place Order'}
+        </PrimaryButton>
       </div>
     </div>
   );
 };
 
-export default page;
+export default PaymentPage;

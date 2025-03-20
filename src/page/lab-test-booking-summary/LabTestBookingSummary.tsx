@@ -5,6 +5,7 @@ import LocationSvg from '@/src/icons/locationSvg';
 import { Calendar, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import BillSummary from '../lab-test-cart/BillSummary';
 
 interface LabTestBookingData {
   id: number;
@@ -36,7 +37,7 @@ interface LabTestBookingData {
 const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
   const [labTestBookingSummaryData, setLabTestBookingSummaryData] =
     useState<LabTestBookingData | null>(null);
-
+  const [cartData, setCartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -66,6 +67,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
 
       // Ensure that the data matches the expected structure
       setLabTestBookingSummaryData(data.TestBooking);
+      setCartData(data.labTestCart || []);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -74,7 +76,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
   };
 
   if (loading) {
-    return <div>Loading cart...</div>;
+    return <div>Loading Test Booking Summary...</div>;
   }
 
   if (error) {
@@ -223,6 +225,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             </div>
           </div>
 
+          {/* <BillSummary cartData={cartData} /> */}
           {/* Bill Summary */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h2 className="text-xl text-gray-500 mb-4">Bill summary</h2>
@@ -230,28 +233,37 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Cart MRP</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.cartMrp}
+                ₹{(Number(labTestBookingSummaryData.cartMrp) || 0).toFixed(2)}
               </p>
             </div>
 
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Other services</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.otherServices}
+                ₹
+                {(Number(labTestBookingSummaryData.otherServices) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Total discount</p>
               <p className="text-green-600">
-                -₹{labTestBookingSummaryData.totalDiscount}
+                -₹
+                {(Number(labTestBookingSummaryData.totalDiscount) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
             <div className="border-t pt-3 flex justify-between font-medium">
               <p className="text-gray-500">To be paid</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.totalPayment}
+                ₹
+                {(Number(labTestBookingSummaryData.totalPayment) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
@@ -260,7 +272,10 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
               <div>
                 <p className="text-gray-400 text-sm">To be paid</p>
                 <p className="text-2xl text-gray-500">
-                  ₹{labTestBookingSummaryData.totalPayment}
+                  ₹
+                  {(
+                    Number(labTestBookingSummaryData.totalPayment) || 0
+                  ).toFixed(2)}
                 </p>
               </div>
               <button

@@ -388,6 +388,8 @@ const LabTestScheduler = ({
             gender: selectedPatient.gender,
           },
         ],
+        sampleCollectionDate: Date.now(),
+        sampleCollectionAddress: null,
         slot_date: selectedDate,
         slot_time: selectedSlot.time,
         slot_price: selectedSlot.price,
@@ -398,8 +400,6 @@ const LabTestScheduler = ({
         totalDiscount: totalDiscount,
         totalPayment: totalPayable,
         orderId: `${Math.floor(Math.random() * 900000) + 100000}`,
-        sampleCollectionDate: null,
-        sampleCollectionAddress: null,
       };
 
       console.log('Submitting booking data:', bookingData);
@@ -562,7 +562,7 @@ const LabTestScheduler = ({
                 >
                   <div className="font-medium">{patient.patientName}</div>
                   <div className="text-gray-500 text-sm">
-                    {patient.age} years • {patient.gender}
+                    {patient.dob} • Patient Gender : {patient.gender}
                   </div>
                 </div>
               ))

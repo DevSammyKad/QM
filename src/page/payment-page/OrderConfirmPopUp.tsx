@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 const OrderConfirmPopUp = () => {
@@ -11,6 +12,12 @@ const OrderConfirmPopUp = () => {
         pharmacist. Team QuickMedsRx
       </p>
 
+      {/* <Link
+        href={`/track-lab-tests${id}`}
+        className="bg-primary-500 text-white py-2 px-4 rounded-lg"
+      >
+        Track Order
+      </Link> */}
       <button className="bg-primary-500 text-white py-2 px-4 rounded-lg">
         Track Order
       </button>

@@ -70,8 +70,7 @@ export default function Page({ params: { id } }: Props) {
 
   if (!labTestData) return <div>Data Not Found...</div>; // Show loading state until data is fetched
 
-  const defaultImageUrl =
-    'https://s3-alpha-sig.figma.com/img/57cb/616a/2266f3507ea43402741c8124757f2399?Expires=1742169600&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=FerCjrJON1JPEE4WzySi5gdfO7DBGMphrFBMcRTvFMXHpmXA36EXSCS3rdfgCJzqaH4F8GGT4WCH7Tr0FMWp7ZQ6-3OFb4TDJ4VpjswqhQoFX5too2A~tbJ9ggnG3osZ6FnW5T3wZi4gXclC2hOi66Z4LIB4ED6GePtX9nuzd6kSk0mwbu637-sWr-Tei0HY5PYog-ad9sRygqWp5m5H-jZVR0YQBQcSPMOghJYrZvRrGydV-BXeSBs-OeqF2gVsHi7ScLDO~SvDRm6gJQ3o~WzOEAVJ1vjwfXbc5UxHyQ6CCKpMmsWQTrL3Xz7zDTlMbC4ucYIB4kEJTSI4d9Uszw__';
+  const defaultImageUrl = '/HealthCheckUpImage.png';
 
   const currentUserId = 1;
   const router = useRouter();
