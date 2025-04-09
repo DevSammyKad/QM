@@ -69,8 +69,6 @@ export default function LabTestPaymentDetail({}: Props) {
       }
 
       setCartData(data.labTestCart || []);
-
-      // Ensur
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -129,7 +127,6 @@ export default function LabTestPaymentDetail({}: Props) {
       </div>
       <Divider className="h-1" />
       <Address />
-      what is lab id {labTestId}
       {isSchedulerOpen && (
         <LabTestScheduler
           cartData={cartData}

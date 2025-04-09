@@ -1,10 +1,10 @@
 'use client';
 
 interface BillSummaryProps {
-  cartMrp: string | null;
-  otherServices: string | null;
-  totalDiscount: string | null;
-  totalPayment: string | null;
+  cartMrp: number;
+  otherServices: number;
+  totalDiscount: number;
+  totalPayment: number;
 }
 
 const BillSummary = ({

@@ -8,11 +8,13 @@ import { useEffect, useState } from 'react';
 import { load } from '@cashfreepayments/cashfree-js';
 import Api, { header } from '../../utils/Api';
 import BillSummary from '@/src/page/lab-test-cart/BillSummary';
+import { toast } from 'react-toastify';
+import { useSearchParams } from 'next/navigation';
 
 interface TestBooking {
   id: number;
   userId: number;
-  labTestId: string;
+  labTestId: number;
   patientId: string; // JSON string; consider parsing if needed
   sampleCollectionDate: string;
   sampleCollectionAddress: string | null;
@@ -24,10 +26,10 @@ interface TestBooking {
   slot_date: string;
   isDefault: boolean;
   cancelReason: string | null;
-  cartMrp: string;
-  otherServices: string;
-  totalDiscount: string;
-  totalPayment: string;
+  cartMrp: number;
+  otherServices: number;
+  totalDiscount: number;
+  totalPayment: number;
   orderId: string;
   createdAt: string;
   updatedAt: string;
@@ -42,19 +44,26 @@ const PaymentPage = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [cartData, setCartData] = useState<TestBooking | null>(null);
+  // or any default number
 
-  const BookingId = 317;
+  const searchParams = useSearchParams();
+
+  const bookingId = searchParams.get('bookingId');
+
+  const numericBookingId = bookingId ? Number(bookingId) : null;
 
   useEffect(() => {
-    if (!BookingId) return;
-    fetchLabTestBookingSummary(BookingId);
-  }, [BookingId]);
+    if (!bookingId) return;
+    fetchLabTestBookingSummary(Number(bookingId));
+  }, [bookingId]);
 
-  console.log('Payment Working');
+  console.log('Payment Working bookingId', bookingId);
 
-  const fetchLabTestBookingSummary = async (BookingId: number) => {
+  console.log('Payment Working', cartData);
+
+  const fetchLabTestBookingSummary = async (bookingId: number) => {
     try {
-      const response = await fetch(Api.LabTestBookingSummary(BookingId), {
+      const response = await fetch(Api.LabTestBookingSummary(bookingId), {
         method: 'GET',
         headers: header,
       });
@@ -92,11 +101,16 @@ const PaymentPage = () => {
 
     if (!cartData || !cartData.totalPayment) {
       console.error('Total payment amount is missing or invalid.');
-      alert('Total payment amount is missing or invalid.');
+      toast.error('Total payment amount is missing or invalid.');
       return;
     }
     const orderId = cartData.orderId;
-    const orderAmount = parseFloat(cartData.totalPayment); // Ensure it's
+    const orderAmount = Number(cartData.totalPayment); // Ensure it's
+
+    if (isNaN(orderAmount)) {
+      toast.error('Invalid payment amount.');
+      return;
+    }
     try {
       const response = await fetch('/api/create-payment-session', {
         method: 'POST',
@@ -159,7 +173,7 @@ const PaymentPage = () => {
         className="md:w-[45%] px-6 py-4 rounded-xl"
         backgroundScroll="hidden"
       >
-        <OrderConfirmPopUp />
+        <OrderConfirmPopUp TrackId={numericBookingId} />
       </DialogWrapper>
 
       {/* Payment Container */}

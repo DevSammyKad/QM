@@ -91,6 +91,11 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
 
   const defaultImageUrl = '/LabTestDummy.png';
 
+  const handleContinue = () => {
+    // Preserve the booking ID when navigating to payment
+    router.push(`/payment?bookingId=${labTestBookingSummaryData.id}`);
+  };
+
   return (
     <div className="w-full mx-auto font-sans">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Booking Summary</h1>
@@ -279,7 +284,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
                 </p>
               </div>
               <button
-                onClick={() => router.push('/payment')}
+                onClick={handleContinue}
                 className="bg-teal-500 text-white px-8 py-3 rounded hover:bg-teal-600 transition-colors"
               >
                 Continue

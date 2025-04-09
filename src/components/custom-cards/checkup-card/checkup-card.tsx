@@ -22,7 +22,7 @@ export default function CheckupCard({ data, forCarousel }: CardType) {
 
   return (
     <Link
-      href={`${Routes.labTest}/${id}`}
+      href={`${Routes.mostBookedHealthCheckups}/${id}`}
       className={`border cursor-pointer ${
         forCarousel ? 'min-w-[300px]' : 'w-full'
       } bg-white w-full relative shadow-product-card rounded-2xl overflow-hidden`}

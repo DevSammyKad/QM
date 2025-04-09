@@ -378,6 +378,8 @@ const LabTestScheduler = ({
       const otherServices = totalMRP * gstRate; // GST applied on MRP
       const totalPayable = totalMRP - totalDiscount + otherServices;
 
+      const orderId = `${Math.floor(Math.random() * 900000) + 100000}`;
+
       const bookingData = {
         userId: currentUserId,
         labTestId,
@@ -399,7 +401,7 @@ const LabTestScheduler = ({
         otherServices: otherServices,
         totalDiscount: totalDiscount,
         totalPayment: totalPayable,
-        orderId: `${Math.floor(Math.random() * 900000) + 100000}`,
+        orderId: orderId,
       };
 
       console.log('Submitting booking data:', bookingData);

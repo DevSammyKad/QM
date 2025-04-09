@@ -11,10 +11,26 @@ interface LabTestTrackerProps {
   bookingId: number;
 }
 
+interface TestBooking {
+  cartMrp: number;
+  image: string;
+  status: string;
+  title: string;
+  id: number;
+  slot_time: string;
+  slot_date: Date;
+}
+
 const TRACKING_STEPS = ['Pending', 'Progress', 'Completed'];
 
+const TRACKING_IMAGES = [
+  '/LabTestPending.png',
+  '/LabTestProgress.png',
+  '/whatsappIcon.png',
+];
+
 export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
-  const [testBooking, setTestBooking] = useState(null);
+  const [testBooking, setTestBooking] = useState<TestBooking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +42,7 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
         setLoading(true);
         console.log('Fetching:', Api.LabTestTracking(bookingId));
 
-        const response = await fetch(Api.LabTestTracking(152), {
+        const response = await fetch(Api.LabTestTracking(bookingId), {
           method: 'GET',
           headers: header,
         });
@@ -70,9 +86,9 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
   );
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-2xl font-semibold text-center mb-2">Track Order</h2>
-      <div className="text-center mb-6 text-sm {currentStatus === 'Cancelled' ? 'text-red-500' : 'text-green-500'}">
+    <div className="w-full  mx-auto bg-white rounded-lg shadow-sm p-6">
+      <h2 className="text-2xl font-semibold text-start mb-2">Track Order</h2>
+      <div className="text-start mb-6 text-sm {currentStatus === 'Cancelled' ? 'text-red-500' : 'text-green-500'}">
         {currentStatus === 'Cancelled'
           ? 'Booking Cancelled'
           : 'Booking Confirmed'}
@@ -102,7 +118,7 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
                 transition={{ duration: 0.5, delay: index * 0.2 }}
               >
                 <Image
-                  src={`/uploads/${step.toLowerCase()}-icon.png`}
+                  src={TRACKING_IMAGES[index]}
                   alt={step}
                   width={30}
                   height={30}
@@ -121,7 +137,7 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
         </div>
       </div>
 
-      <div className="mt-12 border-t pt-6">
+      {/* <div className="mt-12 border-t pt-6">
         <h3 className="font-semibold mb-4">Booking Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-4">
@@ -144,7 +160,11 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-500">Appointment Date:</span>
-              <span className="text-sm">{testBooking.slot_date}</span>
+              <span className="text-sm">
+                {new Intl.DateTimeFormat('en-US').format(
+                  new Date(testBooking.slot_date)
+                )}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-500">Time Slot:</span>
@@ -166,7 +186,7 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

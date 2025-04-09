@@ -32,6 +32,7 @@ const Api = {
   LabTestBooking: `${Main}/testBooking.add`,
   LabTestBookingSummary: (id) => `${Main}/testBooking/${id}`,
   LabTestTracking: (id) => `${Main}/testBooking/${id}`,
+  LabTestBookingCancel: `${Main}/adminOrder/cancel`,
 };
 
 export default Api;

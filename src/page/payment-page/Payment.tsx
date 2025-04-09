@@ -24,7 +24,7 @@ const Payment = () => {
         className="w-[45%] px-6 py-4 rounded-xl"
         backgroundScroll="hidden"
       >
-        <OrderConfirmPopUp />
+        <OrderConfirmPopUp TrackId={12} />
       </DialogWrapper>
     </div>
   );
