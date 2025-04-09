@@ -47,8 +47,7 @@ const LabTestBannerCarousel = () => {
   const banners = [
     {
       id: 'vein-finder',
-      image:
-        'https://s3-alpha-sig.figma.com/img/ea24/bd3d/5a6c88372e0df6911f9521584641f90d?Expires=1742774400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=X3~jmYsz2piFSu5V8L2bevDeu2xUbftBGJIob53llo-gOTC771IeAziXRUGo2C9k~R-XiM2~5NpEmnKle3-8rUjwqIyq58IZ~Q69AlRlJMb0RWWColDuVI~oE7HHPhG~ISQyUHClAjSxdFxTQSWNC~a93C8TBb1BpBqqoXyZFtQj6Ovgt42s5BjF0sJbfYPsujw8re~nSaMB3XlOqwLspnINuQnqj30mlWfNlCqicTpPVB9F5-r0iau2VJuhiJH8xifpKkf7RalT65QJBLmsdwjJ2zMR9~z9~nxlz~2qULP4liGQbI8DxMHeRv~FyMJ0ECmPFHk95M-TpEZqchNvpw__', // Replace with actual path
+      image: '/LabTestBanner2.png',
       link: '/popular-lab-test',
     },
     {

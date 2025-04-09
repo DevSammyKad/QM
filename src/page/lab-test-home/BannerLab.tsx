@@ -21,6 +21,8 @@ export default function Banners() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('banner data', bannerData);
+
   useEffect(() => {
     // Fetch the banner list from the API
     const fetchBannerData = async () => {
