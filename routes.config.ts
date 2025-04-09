@@ -23,7 +23,7 @@ export const Routes = {
   myHealth: '/my-health',
   myPrescriptions: '/my-health/my-prescriptions',
   myMedicines: '/my-health/my-medicines',
-  myLabTests: '/my-health/my-lab-tests',
+  myLabTests: '/my-lab-tests',
 
   privacyPolicy: '/privacy-policy',
 

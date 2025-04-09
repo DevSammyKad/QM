@@ -3,47 +3,41 @@
 import Api, { header } from '@/src/app/(pages)/utils/Api';
 import LocationSvg from '@/src/icons/locationSvg';
 import { Calendar, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import BillSummary from '../lab-test-cart/BillSummary';
 
-interface LabTestBookingDataTypes {
+interface LabTestBookingData {
   id: number;
   userId: number;
   labTestId: number;
-  patientId: string; // This will be parsed
-  sampleCollectionDate: string | null;
-  sampleCollectionAddress: string | null;
-  note: string | null;
-  otherDetails: string | null;
+  patientId: string; // Array stored as a string
+  sampleCollectionDate: string;
+  sampleCollectionAddress: string;
+  note: string;
+  otherDetails: string;
   status: string;
-  slot_price: number;
+  slot_price: string;
   slot_time: string;
+  prescription: string | null;
   slot_date: string;
   isDefault: boolean;
   cancelReason: string | null;
+  cartMrp: string | null;
+  otherServices: string | null;
+  totalDiscount: string | null;
+  totalPayment: string | null;
+  orderId: string | null;
   createdAt: string;
   updatedAt: string;
-}
-
-interface Patient {
-  patientName: string;
-  age: number;
-  gender: string;
-  phone: string;
-  email: string;
+  title: string;
   image: string;
-  userId: number;
-  name: string;
-  dob: string;
-  id: number;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
   const [labTestBookingSummaryData, setLabTestBookingSummaryData] =
-    useState<LabTestBookingDataTypes | null>(null);
-
+    useState<LabTestBookingData | null>(null);
+  const [cartData, setCartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -73,6 +67,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
 
       // Ensure that the data matches the expected structure
       setLabTestBookingSummaryData(data.TestBooking);
+      setCartData(data.labTestCart || []);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -81,7 +76,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
   };
 
   if (loading) {
-    return <div>Loading cart...</div>;
+    return <div>Loading Test Booking Summary...</div>;
   }
 
   if (error) {
@@ -92,10 +87,17 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
     return <div>No booking data available</div>;
   }
 
+  const router = useRouter();
+
   const defaultImageUrl = '/LabTestDummy.png';
 
+  const handleContinue = () => {
+    // Preserve the booking ID when navigating to payment
+    router.push(`/payment?bookingId=${labTestBookingSummaryData.id}`);
+  };
+
   return (
-    <div className="max-w-5xl mx-auto font-sans">
+    <div className="w-full mx-auto font-sans">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Booking Summary</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column */}
@@ -108,16 +110,21 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
               </div>
               <div>
                 <p className="text-gray-600">
-                  {labTestBookingSummaryData.testDescription || ''}
+                  {
+                    JSON.parse(labTestBookingSummaryData.patientId)[0]
+                      .patientName
+                  }
                 </p>
-                <p className="text-gray-400 text-sm">
-                  Male,{labTestBookingSummaryData.patientAge}
+                <p className="text-gray-400 text-sm space-x-2">
+                  <span className="capitalize">
+                    {JSON.parse(labTestBookingSummaryData.patientId)[0].gender},
+                  </span>
+                  <span>
+                    {JSON.parse(labTestBookingSummaryData.patientId)[0].dob}
+                  </span>
                 </p>
               </div>
             </div>
-            <button className="text-teal-500 hover:text-teal-600 text-sm">
-              Change
-            </button>
           </div>
 
           {/* Appointment Date */}
@@ -128,16 +135,13 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
               </div>
               <div>
                 <p className="text-gray-600">
-                  {labTestBookingSummaryData.slot_date},
-                  {labTestBookingSummaryData.slot_time}
-                  {labTestBookingSummaryData.sampleCollectionDate}
+                  {labTestBookingSummaryData.slot_date},{' '}
+                  {labTestBookingSummaryData.slot_time},{' '}
                 </p>
+
                 <p className="text-gray-400 text-sm">Sample collection slot</p>
               </div>
             </div>
-            <button className="text-teal-500 hover:text-teal-600 text-sm">
-              Change
-            </button>
           </div>
 
           {/* Collection Address */}
@@ -155,9 +159,6 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
                 </p>
               </div>
             </div>
-            <button className="text-teal-500 hover:text-teal-600 text-sm">
-              Change
-            </button>
           </div>
 
           {/* Note */}
@@ -172,7 +173,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             </p>
           </div>
 
-          {/* Prescription Buttons */}
+          {/* Prescription Buttons
           <div className="flex gap-3 mb-6">
             <button className="bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 transition-colors">
               My Prescriptions
@@ -182,7 +183,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             </button>
           </div>
 
-          <p className="text-orange-500 text-sm">Doesn't have prescription</p>
+          <p className="text-orange-500 text-sm">Doesn't have prescription</p> */}
 
           {/* Other Details */}
           <div className="mt-8">
@@ -210,7 +211,7 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             <div className="flex items-start gap-4 mb-2">
               <div className="flex-shrink-0 w-16 h-16 relative overflow-hidden rounded">
                 <img
-                  src={labTestBookingSummaryData.labTestId}
+                  src={labTestBookingSummaryData.image}
                   alt="Test"
                   className="object-cover w-full h-full"
                   onError={(e) => {
@@ -220,15 +221,16 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
               </div>
               <div>
                 <p className="text-gray-500">
-                  {labTestBookingSummaryData.testDescription}
+                  {labTestBookingSummaryData.title}
                 </p>
                 <p className="text-teal-500 mt-2">
-                  E-report by {labTestBookingSummaryData.eReportDate}
+                  E-report by {labTestBookingSummaryData.updatedAt},{' '}
                 </p>
               </div>
             </div>
           </div>
 
+          {/* <BillSummary cartData={cartData} /> */}
           {/* Bill Summary */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h2 className="text-xl text-gray-500 mb-4">Bill summary</h2>
@@ -236,28 +238,37 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Cart MRP</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.cartMRP}
+                ₹{(Number(labTestBookingSummaryData.cartMrp) || 0).toFixed(2)}
               </p>
             </div>
 
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Other services</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.otherServices}
+                ₹
+                {(Number(labTestBookingSummaryData.otherServices) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
             <div className="flex justify-between mb-3">
               <p className="text-gray-500">Total discount</p>
               <p className="text-green-600">
-                -₹{labTestBookingSummaryData.totalDiscount}
+                -₹
+                {(Number(labTestBookingSummaryData.totalDiscount) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
             <div className="border-t pt-3 flex justify-between font-medium">
               <p className="text-gray-500">To be paid</p>
               <p className="text-gray-600">
-                ₹{labTestBookingSummaryData.totalAmount}
+                ₹
+                {(Number(labTestBookingSummaryData.totalPayment) || 0).toFixed(
+                  2
+                )}
               </p>
             </div>
 
@@ -266,15 +277,18 @@ const LabTestBookingSummary = ({ BookingId }: { BookingId: number }) => {
               <div>
                 <p className="text-gray-400 text-sm">To be paid</p>
                 <p className="text-2xl text-gray-500">
-                  ₹{labTestBookingSummaryData.finalAmount}
+                  ₹
+                  {(
+                    Number(labTestBookingSummaryData.totalPayment) || 0
+                  ).toFixed(2)}
                 </p>
               </div>
-              {/* <button
-                onClick={onContinue}
+              <button
+                onClick={handleContinue}
                 className="bg-teal-500 text-white px-8 py-3 rounded hover:bg-teal-600 transition-colors"
               >
                 Continue
-              </button> */}
+              </button>
             </div>
           </div>
         </div>

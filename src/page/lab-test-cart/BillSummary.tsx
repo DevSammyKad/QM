@@ -1,28 +1,45 @@
-import { Divider } from '@nextui-org/react';
-import React from 'react';
+'use client';
 
-const BillSummary = () => {
+interface BillSummaryProps {
+  cartMrp: number;
+  otherServices: number;
+  totalDiscount: number;
+  totalPayment: number;
+}
+
+const BillSummary = ({
+  cartMrp,
+  otherServices,
+  totalDiscount,
+  totalPayment,
+}: BillSummaryProps) => {
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[22px] font-semibold">Bill summary</p>
-      <div className="text-shade flex flex-col gap-2">
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Cart MRP</span>
-          <span className="">₹4398</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Other services</span>
-          <span className="">₹19</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Total discount</span>
-          <span className="">-₹2201</span>
-        </p>
+    <div className="bg-white rounded-lg p-6 shadow-sm">
+      <h2 className="text-xl text-gray-500 mb-4">Bill summary</h2>
 
-        <Divider />
-        <p className="flex text-black font-semibold text-xl items-center justify-between gap-3">
-          <span className=" ">To be paid</span>
-          <span className="">₹2216</span>
+      <div className="flex justify-between mb-3">
+        <p className="text-gray-500">Cart MRP</p>
+        <p className="text-gray-600">₹{(Number(cartMrp) || 0).toFixed(2)}</p>
+      </div>
+
+      <div className="flex justify-between mb-3">
+        <p className="text-gray-500">Other services</p>
+        <p className="text-gray-600">
+          ₹{(Number(otherServices) || 0).toFixed(2)}
+        </p>
+      </div>
+
+      <div className="flex justify-between mb-3">
+        <p className="text-gray-500">Total discount</p>
+        <p className="text-green-600">
+          -₹{(Number(totalDiscount) || 0).toFixed(2)}
+        </p>
+      </div>
+
+      <div className="border-t pt-3 flex justify-between font-medium">
+        <p className="text-gray-500">To be paid</p>
+        <p className="text-gray-600">
+          ₹{(Number(totalPayment) || 0).toFixed(2)}
         </p>
       </div>
     </div>

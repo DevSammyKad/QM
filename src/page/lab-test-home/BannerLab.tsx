@@ -1,13 +1,13 @@
-"use client";
-import { useEffect, useState } from "react";
-import BannerCard from "@/src/components/custom-cards/bannerCard";
-import Carousel from "@/src/components/custom-carousel/carousel";
-import SiteLayout from "@/src/layouts/site-layout";
-import { EmblaOptionsType } from "embla-carousel";
-import Api from "../utils/Api";
-import { header } from "../utils/Api";
+'use client';
+import { useEffect, useState } from 'react';
+import BannerCard from '@/src/components/custom-cards/bannerCard';
+import Carousel from '@/src/components/custom-carousel/carousel';
+import SiteLayout from '@/src/layouts/site-layout';
+import { EmblaOptionsType } from 'embla-carousel';
+import Api from '../utils/Api';
+import { header } from '../utils/Api';
 
-const OPTIONS: EmblaOptionsType = { align: "start", dragFree: true };
+const OPTIONS: EmblaOptionsType = { align: 'start', dragFree: true };
 // const bannerData = [
 //   "/media/bannerimgs/banner1.png",
 //   "/media/bannerimgs/banner2.png",
@@ -38,11 +38,11 @@ export default function Banners() {
             data.image3 || [],
           ]);
         } else {
-          setError("Failed to fetch banners.");
+          setError('Failed to fetch banners.');
         }
       } catch (err) {
-        console.error("Error fetching banners:", err);
-        setError("Server error.");
+        console.error('Error fetching banners:', err);
+        setError('Server error.');
       } finally {
         setLoading(false);
       }

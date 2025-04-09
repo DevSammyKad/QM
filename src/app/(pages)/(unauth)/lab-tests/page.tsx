@@ -1,9 +1,5 @@
 'use client';
-import {
-  checkupCardData,
-  dummyProductCardData,
-  packageData,
-} from '@/dummyData';
+
 import { Routes } from '@/routes.config';
 import CheckupCard from '@/src/components/custom-cards/checkup-card/checkup-card';
 import Carousel from '@/src/components/custom-carousel/carousel';
@@ -11,13 +7,13 @@ import CarouselTitleBox from '@/src/components/custom-carousel/carousel-title-bo
 import ImgTab from '@/src/components/imgTab/img-tab';
 import SiteLayout from '@/src/layouts/site-layout';
 import BannersLab from '@/src/page/lab-test-home/BannerLab';
-import PackageTitleCarousel from '@/src/page/lab-test-home/PackageTitleCarousel';
 import HeroLab from '@/src/page/lab-test-home/hero';
 import { useCallback, useEffect, useState } from 'react';
 
 import Api, { header } from '../../utils/Api';
-import PopularLabTestCard from '@/src/components/PopularLabTestCard';
 import { LabTestCarousel } from '@/src/components/custom-carousel/lab-test-carousel';
+import LabTestBannerCarousel from '@/src/components/custom-carousel/LabTestBannerCarousel';
+import DonateBanner from '@/src/page/home/DonateBanner';
 
 // Add these interfaces at the top of the file
 interface LabTest {
@@ -47,9 +43,9 @@ export default function page() {
   const [error, setError] = useState(null);
   const fetchPopularLabTests = useCallback(async () => {
     try {
-      console.log('Fetching Popular Lab Tests from:', Api.PopularlabTest);
+      console.log('Fetching Popular Lab Tests from:', Api.PopularLabTests);
 
-      const res = await fetch(Api.PopularlabTest, { headers: header });
+      const res = await fetch(Api.PopularLabTests, { headers: header });
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -246,12 +242,11 @@ export default function page() {
   return (
     <div className="w-full flex flex-col gap-10 max-sm:gap-5 pb-5">
       <HeroLab />
-      <BannersLab bannerData={bannerData} />
+      {/* <BannersLab bannerData={bannerData} /> */}
 
-      <PackageTitleCarousel
-        title="Doctor curated lab packages"
-        packageData={packageData}
-      />
+      <DonateBanner />
+
+      <LabTestBannerCarousel />
 
       <div className="h-[450px] max-lg:px-0  mx-auto max-w-[1920px] flex items-center justify-between gap-5  px-5 bg-hero-pattern bg-no-repeat w-full">
         <ImgTab
@@ -308,16 +303,12 @@ export default function page() {
           className="h-full max-lg:hidden w-1/5"
         />
       </div>
-      <BannersLab bannerData={bannerData} />
+      <LabTestBannerCarousel />
 
-      <PackageTitleCarousel
-        title="Explore packages"
-        packageData={TestPackageData}
-      />
-      <PackageTitleCarousel
-        title="Find tests by organ"
-        packageData={packageData}
-      />
+      {/* <BannersLab bannerData={bannerData} /> */}
+      <DonateBanner />
+
+      {/* <PackageTitleCarousel title="LabTests" packageData={TestPackageData} /> */}
     </div>
   );
 }

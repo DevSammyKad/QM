@@ -2,170 +2,191 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-// import { CheckCircle, Clipboard, FileText, Loader2, Truck } from 'lucide-react';
-import { cn } from '@/src/lib/utils';
-import FilterSvg from '@/src/icons/filterSvg';
+import Image from 'next/image';
+import Api, { header } from '@/src/app/(pages)/utils/Api';
 
-// Order status types
-export type OrderStatus = 'taken' | 'preparing' | 'delivering' | 'received';
-
-interface OrderStatusInfo {
-  id: OrderStatus;
-  label: string;
-  icon: string | React.ReactNode;
-}
+export type OrderStatus = 'taken' | 'Pending' | 'delivering' | 'received';
 
 interface LabTestTrackerProps {
   bookingId: number;
 }
 
+interface TestBooking {
+  cartMrp: number;
+  image: string;
+  status: string;
+  title: string;
+  id: number;
+  slot_time: string;
+  slot_date: Date;
+}
+
+const TRACKING_STEPS = ['Pending', 'Progress', 'Completed'];
+
+const TRACKING_IMAGES = [
+  '/LabTestPending.png',
+  '/LabTestProgress.png',
+  '/whatsappIcon.png',
+];
+
 export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
-  const [status, setStatus] = useState<OrderStatus>('delivering');
+  const [testBooking, setTestBooking] = useState<TestBooking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define the order statuses and their details
-  const orderStatuses: OrderStatusInfo[] = [
-    {
-      id: 'taken',
-      label: 'Order Taken',
-      icon: '/OrderTakenImage.png',
-    },
-    {
-      id: 'preparing',
-      label: 'Order Is Being Prepared',
-      icon: <FilterSvg />,
-    },
-    {
-      id: 'delivering',
-      label: 'Your delivery agent is coming',
-      icon: <FilterSvg />,
-    },
-  ];
-
-  // Get the current status index
-  const currentStatusIndex = orderStatuses.findIndex((s) => s.id === status);
-
   useEffect(() => {
-    const getOrderStatus = async () => {
+    if (!bookingId) return;
+
+    const fetchBookingDetails = async () => {
       try {
         setLoading(true);
-        // const data = await fetchOrderStatus(orderId);
-        // setStatus(data.status);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch order status');
-        console.error(err);
+        console.log('Fetching:', Api.LabTestTracking(bookingId));
+
+        const response = await fetch(Api.LabTestTracking(bookingId), {
+          method: 'GET',
+          headers: header,
+        });
+
+        if (!response.ok)
+          throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const data = await response.json();
+        if (!data.status || !data.TestBooking)
+          throw new Error('Invalid API response');
+
+        setTestBooking(data.TestBooking);
+      } catch (err: any) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    getOrderStatus();
-
-    // Poll for updates every 30 seconds
-    const intervalId = setInterval(getOrderStatus, 30000);
-
-    return () => clearInterval(intervalId);
+    fetchBookingDetails();
   }, [bookingId]);
 
-  if (loading && !status) {
+  if (loading)
     return (
-      <div className="flex justify-center items-center p-8">
-        {/* <Loader2 className="h-8 w-8 animate-spin text-primary" /> */}
-        <span className="ml-2">Loading order status...</span>
+      <div className="flex justify-center py-8">
+        Loading tracking information...
       </div>
     );
-  }
+  if (error)
+    return <div className="text-red-500 py-8 text-center">Error: {error}</div>;
+  if (!testBooking)
+    return (
+      <div className="text-gray-500 py-8 text-center">
+        No booking information found
+      </div>
+    );
 
-  if (error) {
-    return (
-      <div className="p-4 bg-red-50 text-red-500 rounded-md">
-        {error}. Using default status.
-      </div>
-    );
-  }
+  const currentStatus = testBooking.status || 'Pending';
+  const currentStep = TRACKING_STEPS.findIndex((step) =>
+    currentStatus.toLowerCase().includes(step.toLowerCase())
+  );
 
   return (
-    <div className="w-full p-6 bg-white rounded-lg shadow-sm">
-      <h2 className="text-2xl font-bold mb-8">Track order</h2>
+    <div className="w-full  mx-auto bg-white rounded-lg shadow-sm p-6">
+      <h2 className="text-2xl font-semibold text-start mb-2">Track Order</h2>
+      <div className="text-start mb-6 text-sm {currentStatus === 'Cancelled' ? 'text-red-500' : 'text-green-500'}">
+        {currentStatus === 'Cancelled'
+          ? 'Booking Cancelled'
+          : 'Booking Confirmed'}
+      </div>
 
       <div className="relative">
-        {/* Status indicators */}
-        <div className="flex justify-between mb-2">
-          {orderStatuses.map((orderStatus, index) => (
-            <div key={orderStatus.id} className="flex flex-col items-center">
-              <p
-                className={cn(
-                  'text-sm mb-2 text-center',
-                  index <= currentStatusIndex
-                    ? 'text-green-500 font-medium'
-                    : 'text-gray-500'
-                )}
-              >
-                {orderStatus.label}
-              </p>
-
+        <div className="absolute top-12 left-0 right-0 h-0.5 bg-gray-200"></div>
+        <motion.div
+          className="absolute top-12 left-0 h-0.5 bg-green-500"
+          initial={{ width: '0%' }}
+          animate={{
+            width: `${
+              Math.max(currentStep / (TRACKING_STEPS.length - 1), 0) * 100
+            }%`,
+          }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+        />
+        <div className="flex justify-between relative z-10">
+          {TRACKING_STEPS.map((step, index) => (
+            <div key={step} className="flex flex-col items-center">
               <motion.div
-                className={cn(
-                  'flex items-center justify-center w-12 h-12 rounded-full',
-                  index <= currentStatusIndex ? 'bg-green-100' : 'bg-gray-100'
-                )}
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{
-                  scale: 1,
-                  opacity: 1,
-                  backgroundColor:
-                    index <= currentStatusIndex ? '#dcfce7' : '#f3f4f6',
-                }}
-                transition={{
-                  delay: index * 0.2,
-                  duration: 0.5,
-                }}
+                className={`w-12 h-12 flex items-center justify-center rounded-full ${
+                  currentStep >= index ? 'bg-green-100' : 'bg-gray-100'
+                }`}
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
               >
-                <div
-                  className={cn(
-                    'text-gray-500',
-                    index <= currentStatusIndex && 'text-green-500'
-                  )}
-                >
-                  {typeof orderStatus.icon === 'string' ? (
-                    <img src={orderStatus.icon} alt="" />
-                  ) : (
-                    orderStatus.icon
-                  )}
-                </div>
+                <Image
+                  src={TRACKING_IMAGES[index]}
+                  alt={step}
+                  width={30}
+                  height={30}
+                  className={currentStep >= index ? '' : 'grayscale'}
+                />
               </motion.div>
-            </div>
-          ))}
-        </div>
-
-        {/* Progress line */}
-        <div className="absolute top-[10.5rem] left-0 w-full h-0.5 bg-gray-200">
-          <motion.div
-            className="h-full bg-green-500"
-            initial={{ width: '0%' }}
-            animate={{
-              width: `${
-                (currentStatusIndex / (orderStatuses.length - 1)) * 100
-              }%`,
-            }}
-            transition={{ duration: 1, ease: 'easeInOut' }}
-          />
-        </div>
-
-        {/* Dotted lines between icons */}
-        <div className="absolute top-[4.5rem] left-0 w-full flex justify-between">
-          {orderStatuses.slice(0, -1).map((_, index) => (
-            <div
-              key={index}
-              className="flex-1 flex justify-center items-center"
-            >
-              <div className="w-full border-t-2 border-dotted border-gray-300" />
+              <p
+                className={`mt-2 text-xs ${
+                  currentStep >= index ? 'text-green-500' : 'text-gray-400'
+                }`}
+              >
+                {step}
+              </p>
             </div>
           ))}
         </div>
       </div>
+
+      {/* <div className="mt-12 border-t pt-6">
+        <h3 className="font-semibold mb-4">Booking Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              {testBooking.image && (
+                <Image
+                  src={testBooking.image}
+                  alt={testBooking.title}
+                  width={64}
+                  height={64}
+                  className="object-cover"
+                />
+              )}
+            </div>
+            <div>
+              <h4 className="font-medium text-sm">{testBooking.title}</h4>
+              <p className="text-xs text-gray-500">ID: {testBooking.id}</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Appointment Date:</span>
+              <span className="text-sm">
+                {new Intl.DateTimeFormat('en-US').format(
+                  new Date(testBooking.slot_date)
+                )}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Time Slot:</span>
+              <span className="text-sm">{testBooking.slot_time}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-500">Status:</span>
+              <span
+                className={`text-sm font-medium ${
+                  currentStatus === 'Cancelled'
+                    ? 'text-red-500'
+                    : currentStatus === 'Completed'
+                    ? 'text-green-500'
+                    : 'text-blue-500'
+                }`}
+              >
+                {currentStatus}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div> */}
     </div>
   );
 }

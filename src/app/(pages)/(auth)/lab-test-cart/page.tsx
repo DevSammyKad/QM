@@ -6,14 +6,21 @@ import EmptyCart from '@/src/page/cart/empty-cart';
 import CartItems from '@/src/page/lab-test-cart/CartItems';
 import LabTestPaymentDetail from '@/src/page/lab-test-cart/LabTestPaymentDetail';
 
+const currentUserId = 1;
 export default function Page() {
   const [labTestCartData, setLabTestCartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLabTestCart = async (userId: number) => {
+  useEffect(() => {
+    fetchLabTestCart();
+  }, []);
+
+  // ✅ No need for `userId` argument, use `currentUserId` inside function
+  const fetchLabTestCart = async () => {
     try {
-      const response = await fetch(Api.LabTestCart(userId), {
+      setLoading(true);
+      const response = await fetch(Api.LabTestCart(currentUserId), {
         method: 'GET',
         headers: header,
       });
@@ -23,7 +30,7 @@ export default function Page() {
       }
 
       const data = await response.json();
-      console.log(data);
+      console.log('Fetched Cart Data:', data);
       setLabTestCartData(data.labTestCart || []);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -32,18 +39,13 @@ export default function Page() {
     }
   };
 
-  if (loading) {
-    return <div>Loading cart...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading cart...</div>;
+  // }
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
   }
-
-  useEffect(() => {
-    const userId = 1; // Replace with dynamic user ID if needed
-    fetchLabTestCart(userId);
-  }, []);
 
   return (
     <div className="w-full">
@@ -54,7 +56,11 @@ export default function Page() {
               <p className="text-2xl font-semibold">
                 {labTestCartData.length} items added
               </p>
-              <CartItems labTestCart={labTestCartData} status={true} />
+              <CartItems
+                labTestCart={labTestCartData}
+                onCartUpdate={fetchLabTestCart}
+              />
+              ;
               {/* {labTestCartData.map((cartItem) => (
                 <CartItem key={cartItem.id} cartItem={cartItem} />
               ))} */}

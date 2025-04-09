@@ -1,39 +1,35 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 import {
   dummyAges,
   dummyBrands,
   dummyProductsForms,
   dummyUses,
   selectOptions,
-} from "@/dummyData";
-import CustomCheckbox from "@/src/ui/checkbox/checkbox";
-import CustomCheckboxGroup from "@/src/ui/checkbox/custom-checkbox-group";
-import GlobalSearchBox from "@/src/ui/searchbox/global-search-box";
-import CustomSelect from "@/src/ui/select/custom-select";
-import { Divider } from "@nextui-org/divider";
-import { SelectItem } from "@nextui-org/select";
-import CheckupCard from "@/src/components/custom-cards/checkup-card/checkup-card";
+} from '@/dummyData';
+import CustomCheckbox from '@/src/ui/checkbox/checkbox';
+import CustomCheckboxGroup from '@/src/ui/checkbox/custom-checkbox-group';
+import GlobalSearchBox from '@/src/ui/searchbox/global-search-box';
+import CustomSelect from '@/src/ui/select/custom-select';
+import { Divider } from '@nextui-org/divider';
+import { SelectItem } from '@nextui-org/select';
+import CheckupCard from '@/src/components/custom-cards/checkup-card/checkup-card';
+import Api, { header } from '../../utils/Api';
 
 export default function Page() {
-  const [topSellingData, setTopSellingData] = useState([]);
+  const [mostBookingHealthCheckUps, setMostBookingHealthCheckUpsData] =
+    useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTopSellingData = async () => {
+    const fetchMostBookingHealthCheckUps = async () => {
       try {
-        const res = await fetch(
-          "https://quickmeds.sndktech.online/labTest.mostBookedTests",
-          {
-            headers: {
-              "x-authorization":
-                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
-            },
-          }
-        );
+        const res = await fetch(Api.MostBookedTests, {
+          headers: header,
+        });
 
         if (!res.ok) {
-          console.error("Error Status:", res.status);
+          console.error('Error Status:', res.status);
           const errorText = await res.text();
           throw new Error(
             `Failed to fetch data. Status Code: ${res.status}, Details: ${errorText}`
@@ -41,7 +37,7 @@ export default function Page() {
         }
 
         const data = await res.json();
-        console.log("Fetched Lab Tests Data:", data);
+        console.log('Fetched Lab Tests Data:', data);
 
         if (data && Array.isArray(data.labTests)) {
           const mappedData = data.labTests.map((test) => ({
@@ -54,22 +50,22 @@ export default function Page() {
             offer: 70,
             // offer: ((test.mrp - test.sellingPrice) / test.mrp) * 100, // Calculating discount percentage
           }));
-          setTopSellingData(mappedData);
+          setMostBookingHealthCheckUpsData(mappedData);
         } else {
-          setTopSellingData([]);
-          console.error("labTests is not an array:", data.labTests);
+          setMostBookingHealthCheckUpsData([]);
+          console.error('labTests is not an array:', data.labTests);
         }
       } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error('Fetch Error:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTopSellingData();
+    fetchMostBookingHealthCheckUps();
   }, []);
 
-  const randomData = topSellingData; // Use the fetched data for rendering
+  const randomData = mostBookingHealthCheckUps; // Use the fetched data for rendering
 
   return (
     <div className="">
