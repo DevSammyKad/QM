@@ -19,6 +19,7 @@ interface TestBooking {
   id: number;
   slot_time: string;
   slot_date: Date;
+  finalOrderStatus?: string;
 }
 
 const TRACKING_STEPS = ['Pending', 'Progress', 'Completed'];
@@ -80,15 +81,24 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
       </div>
     );
 
-  const currentStatus = testBooking.status || 'Pending';
-  const currentStep = TRACKING_STEPS.findIndex((step) =>
-    currentStatus.toLowerCase().includes(step.toLowerCase())
-  );
+  const currentStatus =
+    testBooking.finalOrderStatus || testBooking.status || 'Pending';
+
+  const isCancelled = currentStatus.toLowerCase() === 'cancelled';
+  const currentStep = isCancelled
+    ? -1
+    : TRACKING_STEPS.findIndex((step) =>
+        currentStatus.toLowerCase().includes(step.toLowerCase())
+      );
 
   return (
     <div className="w-full  mx-auto bg-white rounded-lg shadow-sm p-6">
       <h2 className="text-2xl font-semibold text-start mb-2">Track Order</h2>
-      <div className="text-start mb-6 text-sm {currentStatus === 'Cancelled' ? 'text-red-500' : 'text-green-500'}">
+      <div
+        className={`text-start mb-6 text-sm ${
+          currentStatus === 'Cancelled' ? 'text-red-500' : 'text-green-500'
+        }`}
+      >
         {currentStatus === 'Cancelled'
           ? 'Booking Cancelled'
           : 'Booking Confirmed'}
@@ -97,12 +107,16 @@ export default function LabTestTracker({ bookingId }: LabTestTrackerProps) {
       <div className="relative">
         <div className="absolute top-12 left-0 right-0 h-0.5 bg-gray-200"></div>
         <motion.div
-          className="absolute top-12 left-0 h-0.5 bg-green-500"
+          className={`absolute top-12 left-0 h-0.5 ${
+            isCancelled ? 'bg-red-500' : 'bg-green-500'
+          }`}
           initial={{ width: '0%' }}
           animate={{
-            width: `${
-              Math.max(currentStep / (TRACKING_STEPS.length - 1), 0) * 100
-            }%`,
+            width: isCancelled
+              ? '100%'
+              : `${
+                  Math.max(currentStep / (TRACKING_STEPS.length - 1), 0) * 100
+                }%`,
           }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
         />

@@ -1,16 +1,13 @@
 'use client';
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Address from '@/src/page/cart/address';
 import Bill from '@/src/page/cart/bill';
 import { OutLinedButton } from '@/src/ui/buttons/buttons';
-import Image from 'next/image';
-import { dummyProductCardData } from '@/dummyData';
+
 import LabTestTracker from '@/src/page/lab-test-tracking/LabTestTracker';
 import BillSummary from '@/src/page/lab-test-cart/BillSummary';
 import Api, { header } from '../../../utils/Api';
 import ImgTab from '@/src/components/imgTab/img-tab';
-
-const data = dummyProductCardData.slice(0, 3);
 
 interface TestBooking {
   cartMrp: number;
@@ -25,13 +22,25 @@ interface TestBooking {
   totalDiscount: number;
 }
 
+interface AdminOrder {
+  id: number;
+}
+
+interface LabTestResponse {
+  status: boolean;
+  TestBooking: TestBooking;
+  adminOrder: AdminOrder;
+}
+
+const defaultImageUrl = '/HealthCheckUpImage.png';
+
 export default function Page({ params }: { params: { id: string } }) {
   const [testBooking, setTestBooking] = useState<TestBooking | null>(null);
+  const [adminOrderId, setAdminOrderId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const bookingId = Number(params.id);
 
-  const defaultImageUrl = '/HealthCheckUpImage.png';
+  const bookingId = Number(params.id);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -49,11 +58,12 @@ export default function Page({ params }: { params: { id: string } }) {
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
 
-        const data = await response.json();
+        const data: LabTestResponse = await response.json();
         if (!data.status || !data.TestBooking)
           throw new Error('Invalid API response');
 
         setTestBooking(data.TestBooking);
+        setAdminOrderId(data.adminOrder?.id ?? null);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -67,6 +77,41 @@ export default function Page({ params }: { params: { id: string } }) {
   console.log('bookingId', bookingId);
 
   if (!testBooking) return <div>Loading booking details...</div>;
+
+  const handleDeleteBooking = async () => {
+    if (!adminOrderId) {
+      setError('Admin order ID is missing');
+      return;
+    }
+    try {
+      setLoading(true);
+      console.log('Fetching:', Api.LabTestBookingCancel);
+
+      const response = await fetch(Api.LabTestBookingCancel, {
+        method: 'PUT',
+        headers: {
+          ...header,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: adminOrderId,
+          finalOrderStatus: 'Cancelled',
+          cancelReason: 'I bought the wrong item',
+        }),
+      });
+
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const result = await response.json();
+
+      console.log('Cancel response:', result);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="grid gap-5 grid-cols-1 lg:grid-cols-3 justify-items-center">
@@ -131,7 +176,9 @@ export default function Page({ params }: { params: { id: string } }) {
           <Address />
         </div>
         <div className="flex flex-col gap-4  my-5">
-          <OutLinedButton>Cancel Order</OutLinedButton>
+          <OutLinedButton onClick={handleDeleteBooking}>
+            Cancel Order
+          </OutLinedButton>
         </div>
       </div>
     </div>
