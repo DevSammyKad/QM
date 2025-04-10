@@ -35,6 +35,7 @@ export default function page() {
     '/media/bannerimgs/banner1.png',
     '/media/bannerimgs/banner2.png',
   ];
+
   const defaultImageUrl = 'placeholder.png';
   const [popularLabData, setPopularLabData] = useState<LabTest[]>([]);
   const [TestPackageData, setTestPackageData] = useState([]);
