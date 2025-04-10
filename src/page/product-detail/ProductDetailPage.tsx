@@ -1,28 +1,29 @@
-'use client';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import ProductCard from '@/src/components/custom-cards/productCard/productCard';
-import Carousel from '@/src/components/custom-carousel/carousel';
-import CarouselTitleBox from '@/src/components/custom-carousel/carousel-title-box';
-import ProductDetailsHeader from '@/src/page/product-detail/product-detail-header';
-import ProductInformation from '@/src/page/product-detail/product-information';
-import Ratings from '@/src/page/product-detail/ratings';
-import Reviews from '@/src/page/product-detail/reviews';
+"use client";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import ProductCard from "@/src/components/custom-cards/productCard/productCard";
+import Carousel from "@/src/components/custom-carousel/carousel";
+import CarouselTitleBox from "@/src/components/custom-carousel/carousel-title-box";
+import ProductDetailsHeader from "@/src/page/product-detail/product-detail-header";
+import ProductInformation from "@/src/page/product-detail/product-information";
+import Ratings from "@/src/page/product-detail/ratings";
+import Reviews from "@/src/page/product-detail/reviews";
 import {
   ProductCardType,
   ProductDetailsType,
   ProductVariantType,
-} from '@/src/types/productTypes';
-import BuyButton from './buy-button';
-import NotifyButton from './notify-button';
-import ExpertAdvice from './ExpertAdvice';
-import { Divider } from '@nextui-org/react';
-import Refill from './refill';
+} from "@/src/types/productTypes";
+import BuyButton from "./buy-button";
+import NotifyButton from "./notify-button";
+import ExpertAdvice from "./ExpertAdvice";
+import Refill from "./refill";
 
 export default function ProductDetailPage() {
   const [productData, setProductData] = useState<ProductDetailsType | null>(
     null
   );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [productsCardData, setProductsCardData] = useState<ProductCardType[]>(
     []
   );
@@ -32,12 +33,19 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
+        const selectedProductId = localStorage.getItem("selectedProductId");
+        if (!selectedProductId) {
+          setError("No selected product ID found in localStorage.");
+          setLoading(false);
+          return;
+        }
+
         const response = await axios.get(
-          'https://quickmeds.sndktech.online/product.get/17',
+          `https://quickmeds.sndktech.online/product.get/${selectedProductId}`,
           {
             headers: {
-              'X-Authorization':
-                'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
+              "X-Authorization":
+                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
             },
           }
         );
@@ -47,7 +55,7 @@ export default function ProductDetailPage() {
         setProductsCardData(data.substituteProducts || []);
         setSelectedVariant(data.variants?.[0] || null); // Set first variant by default
       } catch (error) {
-        console.error('Error fetching product data:', error);
+        console.error("Error fetching product data:", error);
       }
     };
 
@@ -84,8 +92,9 @@ export default function ProductDetailPage() {
             />
           </CarouselTitleBox>
 
-          {/* Pass the product info to ProductInformation */}
+          {/* ✅ Product Information Component with Props */}
           <ProductInformation
+            productId={productData.id}
             productIntroduction={productData.productIntroduction}
             composition={productData.composition}
             uses={productData.usesOfMedication}
@@ -110,42 +119,17 @@ export default function ProductDetailPage() {
               slideDataLength={productsCardData.length}
             />
           </CarouselTitleBox>
-
-          <p className="my-5 text-gray-500">
-            Disclaimer The information provided herein is supplied to the best
-            of our abilities to make it accurate and reliable as it is published
-            after a review by a team of professionals. This information is
-            solely intended to provide a general overview on the product and
-            must be used for informational purposes only. You should not use the
-            information provided herein to diagnose, prevent, or cure a health
-            problem. Nothing contained on this page is intended to create a
-            doctor-patient relationship, replace or be a substitute for a
-            registered medical practitioner's medical treatment/advice or
-            consultation. The absence of any information or warning to any
-            medicine shall not be considered and assumed as an implied
-            assurance. We highly recommend that you consult your registered
-            medical practitioner for all queries or doubts related to your
-            medical condition. You hereby agree that you shall not make any
-            health or medical-related decision based in whole or in part on
-            anything contained in the Site. Please click here for detailed T&C.{' '}
-          </p>
-
-          <Divider />
-          <p className="text-gray-500">
-            All the Products are packed and stored Safely as per the
-            instructions from the manufacturer
-          </p>
         </div>
       </div>
 
       <div className="w-1/4 max-lg:fixed max-lg:bottom-0 max-lg:z-[9999999] max-lg:left-0 max-lg:w-full max-lg:bg-white max-lg:py-2 max-lg:px-3 max-lg:border-t max-lg:shadow-lg flex flex-col gap-2">
         {/* Show BuyButton if the selected variant is in stock, otherwise show NotifyButton */}
-        {selectedVariant?.stock === 'Available' ? (
+        {selectedVariant?.stock === "Available" ? (
           <BuyButton variantData={selectedVariant} />
         ) : (
           <NotifyButton />
         )}
-        <ExpertAdvice />
+        <ExpertAdvice expertAdvice={productData?.expertAdvice || null} />
         <Refill />
       </div>
     </div>

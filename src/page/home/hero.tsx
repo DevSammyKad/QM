@@ -9,8 +9,16 @@ import SiteLayout from '@/src/layouts/site-layout';
 import ColorfulButton from '@/src/ui/buttons/colorful-button';
 import { Button } from '@nextui-org/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Import useRouter
+
 
 export default function Hero() {
+  const router = useRouter(); // Initialize router
+
+  const handleUploadClick = () => {
+    router.push(Routes.myPrescriptions); // Navigate to the Upload Prescription page
+  };
+
   return (
     <div className="bg-green-gradient max-md:bg-none  w-full pt-20 pb-10 max-md:pt-7 max-md:pb-1">
       <div className="flex items-center justify-center  flex-col w-1/2  max-xl:w-2/3 max-md:w-[90%] mx-auto">
@@ -29,7 +37,8 @@ export default function Hero() {
             Order with prescription.
           </p>
           <div>
-            <UploadPresButton>
+          <button onClick={handleUploadClick} className="flex items-center text-primary-500 gap-1">
+            {/* <UploadPresButton> */}
               <p className="flex items-center text-primary-500 gap-1">
                 Upload now
                 <ArrowIcon
@@ -38,7 +47,9 @@ export default function Hero() {
                   width={14}
                 />
               </p>
-            </UploadPresButton>
+              </button>
+
+            {/* </UploadPresButton> */}
           </div>
         </div>
       </div>

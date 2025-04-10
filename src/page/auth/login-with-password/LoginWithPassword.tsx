@@ -1,14 +1,14 @@
-'use client';
-import { PrimaryButton } from '@/src/ui/buttons/buttons';
-import FormInput from '@/src/ui/form/form-input';
-import Link from 'next/link';
-import React, { useState } from 'react';
+"use client";
+import { PrimaryButton } from "@/src/ui/buttons/buttons";
+import FormInput from "@/src/ui/form/form-input";
+import Link from "next/link";
+import React, { useState } from "react";
 
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useRouter } from 'next/navigation';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
-type PopupStep = 'login' | 'resetPassword' | 'checkMail' | 'newPassword' | null;
+type PopupStep = "login" | "resetPassword" | "checkMail" | "newPassword" | null;
 
 interface PopupProps {
   closePopup: () => void;
@@ -16,31 +16,35 @@ interface PopupProps {
 }
 
 const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
-  const [email, setEmail] = useState(''); // State for email
-  const [password, setPassword] = useState(''); // State for password
+  const [email, setEmail] = useState(""); // State for email
+  const [password, setPassword] = useState(""); // State for password
   const [loading, setLoading] = useState(false); // State to control the loading state
-  const [error, setError] = useState(''); // State for errors
-  const [token, setToken] = useState(''); // State to store the token after successful login
+  const [error, setError] = useState(""); // State for errors
+  const [token, setToken] = useState(""); // State to store the token after successful login
   const router = useRouter();
 
   // Handle the API call for login
   const handleLogin = async () => {
     setLoading(true); // Start loading
-    setError(''); // Reset error message
+    setError(""); // Reset error message
 
     const loginData = {
       email,
       password,
     };
 
+    // const authToken = localStorage.getItem("authToken"); // Get token from localStorage
+
     try {
       const response = await fetch(
-        'https://quickmeds.sndktech.online/users.Newlogin',
+        "https://quickmeds.sndktech.online/users.Newlogin",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'x-authorization': 'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
+            "Content-Type": "application/json",
+            "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+            // Authorization: `Bearer ${authToken}`, // Use stored authToken
+
           },
           body: JSON.stringify(loginData),
         }
@@ -52,15 +56,17 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
         // Handle success response
         setToken(data.token); // Save token
         toast.success(data.message); // Show success toast
-        router.push('/');
+        localStorage.setItem("authToken", data.token); // Store new authToken
+        localStorage.setItem("userId", data.userId); // Store userId
+        router.push("/");
       } else {
         // Handle error response
-        setError(data.message || 'An error occurred. Please try again.');
-        toast.error(data.message || 'An error occurred. Please try again.'); // Show error toast
+        setError(data.message || "An error occurred. Please try again.");
+        // toast.error(data.message || "An error occurred. Please try again."); // Show error toast
       }
     } catch (error) {
-      setError('An error occurred. Please check your connection.');
-      toast.error('An error occurred. Please check your connection.'); // Show error toast
+      setError("An error occurred. Please check your connection.");
+      // toast.error("An error occurred. Please check your connection."); // Show error toast
     } finally {
       setLoading(false); // Stop loading
     }
@@ -68,7 +74,7 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
 
   const handleResetPassword = () => {
     // Directly call setPopupStep to open reset password popup
-    setPopupStep('resetPassword');
+    setPopupStep("resetPassword");
   };
   return (
     <div className="mx-auto  flex items-center gap-10 justify-between p-10 ">
@@ -101,21 +107,28 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
           onClick={handleLogin}
           disabled={loading} // Disable button when loading
         >
-          {loading ? 'Logging in...' : 'Log in'}
+          {loading ? "Logging in..." : "Log in"}
         </PrimaryButton>
 
         {/* Error message */}
         {error && <p className="text-red-500">{error}</p>}
 
         <div className="flex items-center justify-center flex-col gap-2">
-          <PrimaryButton onClick={handleResetPassword}>
+          <p
+            className="text-gray-700 cursor-pointer hover:text-gray-600 font-semibold"
+            onClick={handleResetPassword}
+          >
             Reset Password
-          </PrimaryButton>
+          </p>
+
           <p className="text-gray-500">
-            New to Quick Meds?{' '}
-            <Link className="text-primary-500" href={'/'}>
+            New to Quick Meds?{" "}
+            <button
+              className="text-primary-500 "
+              onClick={() => setPopupStep("signup")} // Fix applied
+            >
               Register
-            </Link>
+            </button>
           </p>
         </div>
       </div>

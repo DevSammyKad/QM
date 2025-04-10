@@ -1,3 +1,7 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import ArrowIcon from "@/src/icons/arrowIcon";
 import EmailSvg from "@/src/icons/emailSvg";
 import PhoneSvg from "@/src/icons/phoneSvg";
@@ -8,8 +12,42 @@ import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
 import { Divider } from "@nextui-org/divider";
 import { Switch } from "@nextui-org/switch";
+import Link from "next/link";
 
-export default function page() {
+const profileId = "ProfileId";
+
+export default function Page() {
+  const [profileData, setProfileData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user profile data from the API
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const authToken = localStorage.getItem("authToken");
+
+      try {
+        const response = await axios.get(
+          "https://quickmeds.sndktech.online/users.profile",
+          {
+            headers: {
+              "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+        setProfileData(response.data.user);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-5">
       <div className="h-full w-full flex flex-col shadow-product-card bg-white rounded-lg">
@@ -28,7 +66,7 @@ export default function page() {
           <div className="w-full h-1/2 bg-primary-500 absolute top-0 left-0 "></div>
           <div className="flex flex-col items-center w-fit gap-2">
             <Avatar
-              src="/user.png"
+              src={profileData?.avatar || "/user.png"}
               className="w-36 h-36 cursor-pointer text-large"
             />
             <p className="text-xs font-semibold cursor-pointer">
@@ -43,17 +81,20 @@ export default function page() {
               <p className="text-shade text-sm">User Name</p>
               <input
                 type="text"
-                className={`border-none w-full outline-none `}
-                defaultValue={"Ankit"}
+                className="border-none w-full outline-none"
+                value={profileData?.name || "N/A"}
+                readOnly
               />
             </label>
-            <Button
-              color="secondary"
-              variant="light"
-              className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
-            >
-              Edit
-            </Button>
+            <Link href={`/profile/${profileId}`}>
+              <Button
+                color="secondary"
+                variant="light"
+                className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
+              >
+                Edit
+              </Button>
+            </Link>
           </form>
           <Divider />
           <form className="flex items-center px-5 max-sm:px-1 gap-4 max-sm:gap-1 py-2 justify-between">
@@ -63,14 +104,15 @@ export default function page() {
               <input
                 type="tel"
                 maxLength={10}
-                className={`border-none w-full outline-none `}
-                defaultValue={"8295451564"}
+                className="border-none w-full outline-none"
+                value={profileData?.phone || "N/A"}
+                readOnly
               />
             </label>
             <Button
               color="secondary"
               variant="light"
-              className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
+              className="font-semibold  max-sm:w-fit max-sm:min-w-fit"
             >
               Edit
             </Button>
@@ -82,14 +124,15 @@ export default function page() {
               <p className="text-shade text-sm">Email</p>
               <input
                 type="email"
-                className={`border-none w-full outline-none `}
-                defaultValue={"Fawadkhanexample@gmail.com"}
+                className="border-none w-full outline-none"
+                value={profileData?.email || "N/A"}
+                readOnly
               />
             </label>
             <Button
               color="secondary"
               variant="light"
-              className="font-semibold  max-sm:w-fit max-sm:min-w-fit  "
+              className="font-semibold  max-sm:w-fit max-sm:min-w-fit"
             >
               Edit
             </Button>

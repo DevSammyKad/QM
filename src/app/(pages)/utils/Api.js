@@ -14,6 +14,10 @@ const Api = {
   PopularlabTest: `${Main}/labTest.popularTests`,
   TestPackage: `${Main}/testPackage.get`,
   MostBookedTests: `${Main}/labTest.mostBookedTests`,
+  ProductCartData: `${Main}/productCart.get`,
+  Wallet: `${Main}/wallet.get`,
+  Transaction: `${Main}/transaction.getAll`,
+  AddMoney: `${Main}/transaction.add`,
 };
 
 export default Api;

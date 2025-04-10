@@ -1,7 +1,7 @@
-import { dummyPopularLabTestData } from '@/dummyData';
-import React from 'react';
-import ArrowIcon from '../icons/arrowIcon';
-import { CheckupCardType } from '../types';
+import { dummyPopularLabTestData } from "@/dummyData";
+import React from "react";
+import ArrowIcon from "../icons/arrowIcon";
+import { CheckupCardType } from "../types";
 
 type CardType = {
   forCarousel?: boolean;
@@ -28,9 +28,9 @@ const PopularLabTest = () => {
             <h1>{item.title}</h1>
             <p className="text-sm text-gray-500">{item.description}</p>
             <div className="flex justify-between items-center">
-              <p>{item.price} Onwards</p>{' '}
+              <p>₹ {item.price} Onwards</p>{" "}
               <button className="flex items-center gap-2 px-3 py-1 text-red-500">
-                Schedule Now{' '}
+                Schedule Now{" "}
                 {/* <ArrowIcon className="-rotate-90 text-red-500 bg-red-500" />
                 <ArrowIcon className="-rotate-90 text-red-500 bg-red-500" /> */}
               </button>

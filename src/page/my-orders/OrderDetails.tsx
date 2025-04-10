@@ -1,13 +1,20 @@
-'use client';
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { OutLinedButton, PrimaryButton } from '@/src/ui/buttons/buttons';
+"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import axios from "axios";
+import { useEffect } from "react";
+import { OutLinedButton, PrimaryButton } from "@/src/ui/buttons/buttons";
+import DialogWrapper from "@/src/ui/dialog-wrapper.tsx/dialog-wrapper";
+import CrossSvg from "@/src/icons/crossSvg";
+import CustomCheckbox from "@/src/ui/checkbox/checkbox";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
-import DialogWrapper from '@/src/ui/dialog-wrapper.tsx/dialog-wrapper';
-import CrossSvg from '@/src/icons/crossSvg';
-import CustomCheckbox from '@/src/ui/checkbox/checkbox';
 
 const OrderDetails = () => {
+  const { orderId } = useParams(); // ✅ Fetch orderId from URL parameters
+
+
   const [openOrderCancelPopUp, setOpenOrderCancelPopUp] =
     useState<boolean>(false);
   const openOrderCancelPopUpHandler = () => {
@@ -16,6 +23,37 @@ const OrderDetails = () => {
   const closeOrderCancelPopUpHandler = () => {
     setOpenOrderCancelPopUp(false);
   };
+  const [orderData, setOrderData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderId) return; // ✅ Prevent API call if orderId is missing
+
+    const fetchOrderDetails = async () => {
+      try {
+        const response = await axios.get(
+          `https://quickmeds.sndktech.online/OrderDetails/${orderId}`,
+          {
+            headers: {
+              "X-Authorization":
+                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+            },
+          }
+        );
+        setOrderData(response.data.adminOrder);
+      } catch (err) {
+        setError("Something went wrong!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [orderId]); // ✅ Fetch data when orderId changes
+
+  if (loading) return <p>Loading order details...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-gray-50">
@@ -27,14 +65,16 @@ const OrderDetails = () => {
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex">
               <div className="w-1/2">
-                <p className="text-gray-500 mb-1">Deliver on</p>
-                <p className="text-teal-500 text-xl font-medium">03-04-2024</p>
+                <p className="text-gray-500 mb-1">Order Date</p>
+                <p className="text-teal-500 text-xl font-medium">
+                  {new Date(orderData?.orderDate).toLocaleDateString()}
+                </p>
               </div>
               <div className="w-1/2">
                 <p className="text-gray-500 mb-1">Order id</p>
-                <p className="text-gray-700">Iron man: po10659829l1-776</p>
-                <p className="text-gray-500 mt-3 mb-1">Order date</p>
-                <p className="text-gray-700">6 Mar, 10:30 AM</p>
+                <p className="text-gray-700">{orderData?.orderId}</p>
+                {/* <p className="text-gray-500 mt-3 mb-1">Order date</p>
+                <p className="text-gray-700">6 Mar, 10:30 AM</p> */}
               </div>
             </div>
           </div>
@@ -58,10 +98,12 @@ const OrderDetails = () => {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-gray-600 font-medium">
-                  29 Feb 2024, 12 PM - 1PM
+              <p className="text-gray-600 font-medium">
+                  {orderData.deliveryDate 
+                    ? new Date(orderData.deliveryDate).toLocaleString() 
+                    : "To be scheduled"}
                 </p>
-                <p className="text-gray-400 text-sm">Sample collation slot</p>
+                <p className="text-gray-400 text-sm">Delivery slot</p>
               </div>
               <button className="text-teal-500 font-medium">Change</button>
             </div>
@@ -89,12 +131,11 @@ const OrderDetails = () => {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-gray-600 font-medium">
-                  Office (Ashar it 402,thane)
+              <p className="text-gray-600 font-medium">
+                  {orderData.customerDetails.name} ({orderData.address || 
+                    `${orderData.city}, ${orderData.state}`})
                 </p>
-                <p className="text-gray-400 text-sm">
-                  Sample collation address
-                </p>
+                <p className="text-gray-400 text-sm">Delivery address</p>
               </div>
               <button className="text-teal-500 font-medium">Change</button>
             </div>
@@ -170,19 +211,18 @@ const OrderDetails = () => {
             <div className="flex">
               <div className="w-20 h-20 relative mr-4">
                 <Image
-                  src="/vitamin-c.png"
-                  alt="Vitamin C Bottle"
+                  src={orderData?.products[0]?.images[0] || "/vitamin-c.png"}
+                  alt="Product Image"
                   fill
                   className="object-contain"
                 />
               </div>
               <div>
                 <h4 className="text-gray-700 font-medium">
-                  Zinga vita Vitamin Amla Extract 1000mg Tablet
+                  {orderData?.products[0]?.productName}
                 </h4>
                 <p className="text-gray-400 text-sm">
-                  FastRUp Charge is a completely natural Vitamin C supplement
-                  that delivers immunity-boosting...
+                  {orderData?.products[0]?.productIntroduction}
                 </p>
               </div>
             </div>
@@ -194,23 +234,33 @@ const OrderDetails = () => {
             <div className="space-y-3">
               <div className="flex justify-between pb-2">
                 <span className="text-gray-600">Cart MRP</span>
-                <span className="text-gray-700">₹600</span>
+                <span className="text-gray-700"> ₹ {orderData?.amount}</span>
               </div>
 
               <div className="flex justify-between pb-2">
                 <span className="text-gray-600">Other services</span>
-                <span className="text-gray-700">₹19</span>
+                <span className="text-gray-700">
+                  ₹ {orderData?.otherServiceCharge}{" "}
+                </span>
               </div>
 
               <div className="flex justify-between pb-2 border-b">
                 <span className="text-gray-600">Total discount</span>
-                <span className="text-green-600">-₹100</span>
+                <span className="text-green-600">
+                  ₹ {orderData?.discountPrice} {" "}
+                </span>
               </div>
 
               <div className="flex justify-between pt-2 font-medium">
                 <span className="text-gray-700">To be paid</span>
-                <span className="text-gray-900">₹500</span>
+                <span className="text-gray-900"> ₹ {orderData?.amount}</span>
               </div>
+              {/* <div className="flex justify-between py-4">
+              <span className="text-gray-700">Total</span>
+              <span className="text-gray-700 text-xl font-medium">
+                ₹ {orderData?.orderTotal?.amount}
+              </span>
+            </div> */}
             </div>
           </div>
 

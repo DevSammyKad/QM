@@ -1,27 +1,27 @@
-'use client';
+"use client";
 import {
   checkupCardData,
   dummyProductCardData,
   packageData,
-} from '@/dummyData';
-import { useEffect, useState } from 'react';
-import { Routes } from '@/routes.config';
-import CheckupCard from '@/src/components/custom-cards/checkup-card/checkup-card';
-import PackageCard from '@/src/components/custom-cards/package-card/package-card';
-import ProductCard from '@/src/components/custom-cards/productCard/productCard';
-import Carousel from '@/src/components/custom-carousel/carousel';
-import CarouselTitleBox from '@/src/components/custom-carousel/carousel-title-box';
-import ImgTab from '@/src/components/imgTab/img-tab';
-import SiteLayout from '@/src/layouts/site-layout';
-import Banners from './banners';
-import Hero from './hero';
-import Api from '../utils/Api';
-import { header } from '../utils/Api';
-import { headers } from 'next/headers';
-import PopularLabTest from '@/src/components/PopularLabTest';
-import DonateBanner from './DonateBanner';
+} from "@/dummyData";
+import { useEffect, useState } from "react";
+import { Routes } from "@/routes.config";
+import CheckupCard from "@/src/components/custom-cards/checkup-card/checkup-card";
+import PackageCard from "@/src/components/custom-cards/package-card/package-card";
+import ProductCard from "@/src/components/custom-cards/productCard/productCard";
+import Carousel from "@/src/components/custom-carousel/carousel";
+import CarouselTitleBox from "@/src/components/custom-carousel/carousel-title-box";
+import ImgTab from "@/src/components/imgTab/img-tab";
+import SiteLayout from "@/src/layouts/site-layout";
+import Banners from "./banners";
+import Hero from "./hero";
+import Api from "../utils/Api";
+import { header } from "../utils/Api";
+import { headers } from "next/headers";
+import PopularLabTest from "@/src/components/PopularLabTest";
+import DonateBanner from "./DonateBanner";
 
-const defaultImageUrl = 'placeholder.png';
+const defaultImageUrl = "placeholder.png";
 export default function HomePage() {
   const randomData = dummyProductCardData;
 
@@ -41,7 +41,7 @@ export default function HomePage() {
         });
 
         if (!res.ok) {
-          console.error('Error Status:', res.status);
+          console.error("Error Status:", res.status);
           const errorText = await res.text();
           throw new Error(
             `Failed to fetch data. Status Code: ${res.status}, Details: ${errorText}`
@@ -49,7 +49,7 @@ export default function HomePage() {
         }
 
         const data = await res.json();
-        console.log('Fetched Top Selling Data:', data);
+        console.log("Fetched Top Selling Data:", data);
 
         if (data && Array.isArray(data.products)) {
           const mappedData = data.products.map((product: any) => ({
@@ -65,10 +65,10 @@ export default function HomePage() {
           setTopSellingData(mappedData);
         } else {
           setTopSellingData([]);
-          console.error('Products is not an array:', data.products);
+          console.error("Products is not an array:", data.products);
         }
       } catch (err) {
-        console.error('Fetch Error:', err);
+        console.error("Fetch Error:", err);
         // setError(err.message);
       } finally {
         setLoading(false);
@@ -86,14 +86,14 @@ export default function HomePage() {
         });
 
         if (!res.ok) {
-          console.log('Error Status:', res.status);
+          console.log("Error Status:", res.status);
           const errorText = await res.text(); // Read error body if available
-          console.error('Error Details:', errorText);
+          console.error("Error Details:", errorText);
           throw new Error(`Failed to fetch data, Status Code: ${res.status}`);
         }
 
         const data = await res.json();
-        console.log('Fetched Data:', data); // Check what the data looks like
+        console.log("Fetched Data:", data); // Check what the data looks like
         // const defaultImageUrl = "placeholder.png";
         // Ensure products is an array before setting it to state
         if (data && Array.isArray(data.products)) {
@@ -113,10 +113,10 @@ export default function HomePage() {
           setMostPopularData(mappedData);
         } else {
           setMostPopularData([]); // Set empty array if products is not an array
-          console.error('Products is not an array:', data.products);
+          console.error("Products is not an array:", data.products);
         }
       } catch (err) {
-        console.error('Fetch Error:', err);
+        console.error("Fetch Error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -136,15 +136,15 @@ export default function HomePage() {
 
         if (!res.ok) {
           // Handle HTTP errors
-          console.log('Error Status:', res.status);
+          console.log("Error Status:", res.status);
           const errorText = await res.text(); // Read error body if available
-          console.error('Error Details:', errorText);
+          console.error("Error Details:", errorText);
           throw new Error(`Failed to fetch data, Status Code: ${res.status}`);
         }
 
         // Parsing the response JSON
         const data = await res.json();
-        console.log('Fetched Lab Test Data:', data); // Check what the data looks like
+        console.log("Fetched Lab Test Data:", data); // Check what the data looks like
 
         // Handle missing or unexpected data formats
         if (data && Array.isArray(data.labTests)) {
@@ -162,11 +162,11 @@ export default function HomePage() {
 
           setMostPopularLabData(mappedData); // Set the fetched data
         } else {
-          console.error('Products is not an array or missing:', data.labTests);
+          console.error("Products is not an array or missing:", data.labTests);
           setMostPopularLabData([]); // Set empty array if data is not in the expected format
         }
       } catch (err) {
-        console.error('Fetch Error:', err); // Log the error to understand the issue
+        console.error("Fetch Error:", err); // Log the error to understand the issue
         setError(err.message); // Update state with error message
       } finally {
         setLoading(false); // Turn off loading state
@@ -186,15 +186,15 @@ export default function HomePage() {
 
         if (!res.ok) {
           // Handle HTTP errors
-          console.log('Error Status:', res.status);
+          console.log("Error Status:", res.status);
           const errorText = await res.text(); // Read error body if available
-          console.error('Error Details:', errorText);
+          console.error("Error Details:", errorText);
           throw new Error(`Failed to fetch data, Status Code: ${res.status}`);
         }
 
         // Parsing the response JSON
         const data = await res.json();
-        console.log('Fetched Test Package Data:', data); // Check what the data looks like
+        console.log("Fetched Test Package Data:", data); // Check what the data looks like
 
         // Handle missing or unexpected data formats
         if (data && Array.isArray(data.testPackages)) {
@@ -210,13 +210,13 @@ export default function HomePage() {
           setTestPackageData(mappedData); // Set the fetched data
         } else {
           console.error(
-            'Packages is not an array or missing:',
+            "Packages is not an array or missing:",
             data.testPackages
           );
           setTestPackageData([]); // Set empty array if data is not in the expected format
         }
       } catch (err) {
-        console.error('Fetch Error:', err); // Log the error to understand the issue
+        console.error("Fetch Error:", err); // Log the error to understand the issue
         setError(err.message); // Update state with error message
       } finally {
         setLoading(false); // Turn off loading state
@@ -230,8 +230,8 @@ export default function HomePage() {
     const fetchMostBookedHealthCheckups = async () => {
       try {
         console.log(
-          'Fetching Most Booked Health Checkups from:',
-          'https://quickmeds.sndktech.online/labTest.mostBookedTests'
+          "Fetching Most Booked Health Checkups from:",
+          "https://quickmeds.sndktech.online/labTest.mostBookedTests"
         );
 
         // Fetch the test package data
@@ -241,7 +241,7 @@ export default function HomePage() {
 
         if (!res.ok) {
           // If the fetch response is not okay, log error and throw an error
-          console.error('Error Status:', res.status);
+          console.error("Error Status:", res.status);
           const errorText = await res.text(); // Read error body if available
           throw new Error(
             `Failed to fetch data. Status Code: ${res.status}, Details: ${errorText}`
@@ -250,7 +250,7 @@ export default function HomePage() {
 
         // Parse the response data
         const data = await res.json();
-        console.log('Fetched Most Booked Health Checkups Data:', data);
+        console.log("Fetched Most Booked Health Checkups Data:", data);
 
         // Ensure labTests is an array before setting it to state
         if (data && Array.isArray(data.labTests)) {
@@ -268,11 +268,11 @@ export default function HomePage() {
         } else {
           // If the fetched data is not an array or missing, set empty array and log error
           setMostBookedHealthCheckups([]);
-          console.error('labTests is not an array or missing:', data.labTests);
+          console.error("labTests is not an array or missing:", data.labTests);
         }
       } catch (err) {
         // Log any fetch or error handling issues
-        console.error('Fetch Error:', err);
+        console.error("Fetch Error:", err);
         setError(err.message); // Update the state with error message
       } finally {
         // Set loading to false when fetch is complete (either successful or failed)

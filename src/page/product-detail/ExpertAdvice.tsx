@@ -1,32 +1,40 @@
-import React from 'react';
+import React from "react";
 
-type Props = {};
+type ExpertAdviceProps = {
+  expertAdvice: {
+    avatar: string;
+    doctorName: string;
+    designation: string;
+    advice: string;
+  } | null;
+};
 
-const ExpertAdvice = ({}: Props) => {
+const ExpertAdvice = ({ expertAdvice }: ExpertAdviceProps) => {
+  if (!expertAdvice) {
+    return <p className="text-gray-500">Expert advice not available</p>;
+  }
+
   return (
     <div className="my-2">
-      <h1 className="my-5 text-shade">Expert Advice</h1>
+      <h2 className="my-5 text-xl font-semibold text-shade">Expert Advice</h2>
 
       <div className="flex space-x-3 my-2">
         <div className="flex items-center justify-center">
           <img
-            src="/expert-advice.png"
+            src={expertAdvice.avatar || "/expert-advice.png"}
             alt="Expert Advice"
-            className="object-cover object-top w-[100px] h-[100px] rounded-lg "
+            className="object-cover object-top w-[100px] h-[100px] rounded-lg"
           />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-primary-500">Dr Russ Mehta CHibber</h1>
-          <p>BDS</p>
+          <h3 className="text-primary-500 font-semibold">
+            {expertAdvice.doctorName}
+          </h3>
+          <p className="text-gray-700">{expertAdvice.designation}</p>
         </div>
       </div>
-      <p>
-        Fast&Up Charge is a completely natural Vitamin C supplement that
-        delivers immunity-boosting ingredients like 1000mg Natural Amla extract
-        and 10mg Zinc to help boost immune activity, support a robust immune
-        response, and increase resistance to immune challenges. It is a
-        well-known fact that Vitamin C is vital to maintain daily immunity.
-      </p>
+
+      <p className="text-gray-800">{expertAdvice.advice}</p>
     </div>
   );
 };
