@@ -12,6 +12,8 @@ export const dummyBrands = [
   { label: 'Himalaya', value: 'himalaya' },
   { label: 'Baidyanath', value: 'baidyanath' },
   { label: 'Zandu', value: 'zandu' },
+  { label: 'Sun Pharma', value: 'Sun Pharma' },
+
 ];
 export const dummyPackagesCategories = [
   { label: 'Health checkups', value: 'Healthcheckups' },

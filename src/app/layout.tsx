@@ -1,16 +1,17 @@
-import AppLayout from "@/src/layouts/appLayout";
-import type { Metadata } from "next";
-import { Albert_Sans } from "next/font/google";
-import "./globals.css";
+import AppLayout from '@/src/layouts/appLayout';
+import type { Metadata } from 'next';
+import { Albert_Sans } from 'next/font/google';
+import './globals.css';
+import CashFreeProvider from '../providers/CashfreeProvider';
 
 const inter = Albert_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
-  title: "QUICMEDS",
-  description: "",
+  title: 'QUICMEDS',
+  description: '',
 };
 
 export default function RootLayout({
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <CashFreeProvider />
         <AppLayout>{children}</AppLayout>
       </body>
     </html>

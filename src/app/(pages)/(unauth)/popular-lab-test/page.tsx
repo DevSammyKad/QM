@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 import {
   dummyAges,
   dummyBrands,
@@ -7,79 +7,82 @@ import {
   dummyProductsForms,
   dummyUses,
   selectOptions,
-} from "@/dummyData";
-import ProductCard from "@/src/components/custom-cards/productCard/productCard";
-import CustomCheckbox from "@/src/ui/checkbox/checkbox";
-import CustomCheckboxGroup from "@/src/ui/checkbox/custom-checkbox-group";
-import GlobalSearchBox from "@/src/ui/searchbox/global-search-box";
-import CustomSelect from "@/src/ui/select/custom-select";
-import { Divider } from "@nextui-org/divider";
-import { SelectItem } from "@nextui-org/select";
+} from '@/dummyData';
+import ProductCard from '@/src/components/custom-cards/productCard/productCard';
+import CustomCheckbox from '@/src/ui/checkbox/checkbox';
+import CustomCheckboxGroup from '@/src/ui/checkbox/custom-checkbox-group';
+import GlobalSearchBox from '@/src/ui/searchbox/global-search-box';
+import CustomSelect from '@/src/ui/select/custom-select';
+import { Divider } from '@nextui-org/divider';
+import { SelectItem } from '@nextui-org/select';
+import Api from '../../utils/Api';
+import { header } from '@/src/page/utils/Api';
+import LabTestCard from '@/src/components/LabTestCard';
 
 export default function page() {
-  // const randomData = dummyProductCardData;
-
-  const [mostPopularLabData, setMostPopularLabData] = useState([]);
+  const [labTestsData, setLabTestsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchMostPopularLabTest = async () => {
+    const fetchLabTests = async () => {
       try {
+        setLoading(true);
         // Fetch the lab test data
-        const res = await fetch(
-          "https://quickmeds.sndktech.online/labTest.popularTests",
-          {
-            headers: {
-              "x-authorization":
-                "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph", // Authorization token
-            },
-          }
-        );
+        const res = await fetch(Api.PopularLabTests, {
+          headers: header,
+        });
 
         if (!res.ok) {
-          // Handle HTTP errors
-          console.log("Error Status:", res.status);
-          const errorText = await res.text(); // Read error body if available
-          console.error("Error Details:", errorText);
+          console.log('Error Status:', res.status);
+          const errorText = await res.text();
+          console.error('Error Details:', errorText);
           throw new Error(`Failed to fetch data, Status Code: ${res.status}`);
         }
 
-        // Parsing the response JSON
         const data = await res.json();
-        console.log("Fetched Lab Test Data:", data); // Check what the data looks like
+        console.log('Fetched Lab Test Data:', data);
 
-        // Handle missing or unexpected data formats
-        if (data && Array.isArray(data.labTests)) {
-          const mappedData = data.labTests.map((labTest: any) => ({
-            id: labTest.id,
-            title: labTest.testName, // Assuming a 'name' property exists, adjust according to actual data
-            description: labTest.description, // Assuming description exists
-            sellingPrice: labTest.sellingPrice, // Adjust with the correct property
-            actualPrice: labTest.mrp,
-            isLiked: labTest.favorite,
-            offer: labTest.discount,
-            // Add any other necessary fields
-          }));
-
-          setMostPopularLabData(mappedData); // Set the fetched data
+        // Use the data directly as it matches our component requirements
+        if (data && data.status && Array.isArray(data.labTests)) {
+          setLabTestsData(data.labTests);
         } else {
-          console.error("Products is not an array or missing:", data.labTests);
-          setMostPopularLabData([]); // Set empty array if data is not in the expected format
+          console.error('Lab tests data is not in expected format:', data);
+          setLabTestsData([]);
         }
       } catch (err) {
-        console.error("Fetch Error:", err); // Log the error to understand the issue
-        setError(err.message); // Update state with error message
+        console.error('Fetch Error:', err);
+        setError(err.message);
       } finally {
-        setLoading(false); // Turn off loading state
+        setLoading(false);
       }
     };
 
-    fetchMostPopularLabTest();
-  }, []); // Empty dependency array means this will only run once after the component mounts
+    fetchLabTests();
+  }, []);
 
-  // const randomData = topSellingData; // Use the fetched data for rendering
-  const randomData = mostPopularLabData;
+  const handleBooking = (testId: number) => {
+    console.log(`Booking test with ID: ${testId}`);
+    // Add your booking logic here - e.g., redirect to booking page or open modal
+  };
+
+  // Fallback data in case API fails - structured like the backend response
+  const fallbackTests = [
+    {
+      id: 1,
+      testName: 'Comprehensive gold full body checkup with smart report',
+      coverImage: '/public/LabRepresentative.png',
+      mrp: 4398,
+      sellingPrice: 1999,
+      discount: '55',
+      description:
+        'A comprehensive health checkup package to assess your overall health status',
+      favorite: false,
+    },
+  ];
+
+  // Use fetched data if available, otherwise use fallback
+  const displayData = labTestsData.length > 0 ? labTestsData : fallbackTests;
 
   return (
     <div className="">
@@ -147,20 +150,34 @@ export default function page() {
         </div>
         <div className="w-full max-lg:col-span-2 flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <p className="text-shade  text-lg"> {randomData.length} results</p>
+            <p className="text-shade  text-lg"> {displayData.length} results</p>
             <CustomSelect label="Sort By">
               {selectOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
-            </CustomSelect>{" "}
+            </CustomSelect>{' '}
           </div>
-          <div className="grid grid-cols-4 justify-items-center max-[1400px]:grid-cols-3 max-[1080px]:grid-cols-2 max-[450px]:grid-cols-1 gap-3 ">
-            {randomData.map((data) => (
-              <ProductCard key={data.id} data={data} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <p>Loading lab tests...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 justify-items-center max-[1400px]:grid-cols-3 max-[1080px]:grid-cols-2 max-[450px]:grid-cols-1 gap-3">
+              {displayData.map((test) => (
+                <LabTestCard
+                  key={test.id}
+                  id={test.id}
+                  testName={test.testName}
+                  coverImage={test.coverImage}
+                  mrp={test.mrp}
+                  sellingPrice={test.sellingPrice}
+                  discount={test.discount}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

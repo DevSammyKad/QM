@@ -18,18 +18,23 @@ export default function CheckupCard({ data, forCarousel }: CardType) {
     id,
   } = data;
 
+  const defaultImageUrl = '/HealthCheckUpImage.png';
+
   return (
     <Link
-      href={`${Routes.labTest}/${id}`}
+      href={`${Routes.mostBookedHealthCheckups}/${id}`}
       className={`border cursor-pointer ${
         forCarousel ? 'min-w-[300px]' : 'w-full'
       } bg-white w-full relative shadow-product-card rounded-2xl overflow-hidden`}
     >
       <div className="flex items-center justify-center">
         <img
-          src={imgUrl}
+          src={imgUrl || '/HealthCheckUpImage.png'}
           alt="product"
-          className="object-cover object-top w-full aspect-video "
+          className="object-cover object-top w-full aspect-3/2 p1"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = defaultImageUrl;
+          }}
         />
       </div>
       <div className="flex flex-col p-4">

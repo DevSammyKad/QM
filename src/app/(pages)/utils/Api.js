@@ -11,9 +11,28 @@ export const header = {
 const Api = {
   WishlistSearch: (query) => `${Main}/product.get?productName=${query}`,
   Wishlist: `${Main}/wishlist.get1`,
-  PopularlabTest: `${Main}/labTest.popularTests`,
+
   TestPackage: `${Main}/testPackage.get`,
   MostBookedTests: `${Main}/labTest.mostBookedTests`,
+
+  // LabTestExplorePackages: `${Main}/labTest.explorePackages`,
+
+  PopularLabTests: `${Main}/labTest.popularTests`,
+  LabTestAddToCart: `${Main}/labTestCart.add`,
+  LabTestRemoveFromCart: (id) => `${Main}/labTestCart.delete/${id}`,
+  LabTest: (id) => `${Main}/labTest.get/${id}`,
+  LabTestCart: (id) => `${Main}/labTestCart.get.byUserId/${id}`,
+  LabTestPatientsByUserID: (userId) => `${Main}/patient.getByUserId/${userId}`,
+  LabTestGetSlotsDateByLabTestId: (id) =>
+    `${Main}/slotsnew.get?LebtestId=${id}`,
+
+  LabTestGetSlotsTimeByLabTestId: (id, date) =>
+    `${Main}/slotsdate.get?LebtestId=${id}&${date}`,
+  LabTestAddPatient: `${Main}/patient.add`,
+  LabTestBooking: `${Main}/testBooking.add`,
+  LabTestBookingSummary: (id) => `${Main}/testBooking/${id}`,
+  LabTestTracking: (id) => `${Main}/testBooking/${id}`,
+  LabTestBookingCancel: `${Main}/adminOrder/cancel`,
 };
 
 export default Api;

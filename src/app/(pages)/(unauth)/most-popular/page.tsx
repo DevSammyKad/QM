@@ -79,11 +79,9 @@ export default function Page() {
     selectedSort,
   ]);
 
-  const handleCheckboxChange = (setter: any, value: any) => {
-    setter((prev: any) =>
-      prev.includes(value)
-        ? prev.filter((v: any) => v !== value)
-        : [...prev, value]
+  const handleCheckboxChange = (setter, value) => {
+    setter((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
   };
 

@@ -2,11 +2,8 @@
 import {
   dummyAges,
   dummyBrands,
-  dummyPackagesCategories,
-  dummyProductCardData,
   dummyProductsForms,
   dummyUses,
-  selectOptions,
 } from "@/dummyData";
 import { Routes } from "@/routes.config";
 import ProductCard from "@/src/components/custom-cards/productCard/productCard";
@@ -22,17 +19,31 @@ import { useEffect, useState } from "react";
 import Api from "../utils/Api";
 import { header } from "../utils/Api";
 
-const defaultImageUrl = 'placeholder.png';
+const defaultImageUrl = "placeholder.png";
+
 export default function ProductsFilterPage() {
   const [medicines, setMedicines] = useState<any[]>([]); // State to store fetched medicines
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>(""); // State for search query
   const [sortBy, setSortBy] = useState<number | null>(null); // State for sorting
-  const [selectedFilters, setSelectedFilters] = useState<any>({}); // For managing filter values
+  const [selectedFilters, setSelectedFilters] = useState<any>({
+    brand: [],
+    productForm: [],
+    use: [],
+    age: [],
+  }); // For managing filter values and selected filters
 
   const pathname = usePathname(); // For handling routes dynamically
   const router = useRouter(); // For handling navigation
+
+  // Define sorting options
+  const selectOptions = [
+    { label: "Price: Low to High", value: 1 },
+    { label: "Price: High to Low", value: 2 },
+    { label: "Newest", value: 3 },
+    { label: "Best Selling", value: 4 },
+  ];
 
   // Function to add selected filter params
   const addParamsHandler = (value: any, filterType: string) => {
@@ -44,7 +55,11 @@ export default function ProductsFilterPage() {
   };
 
   // Fetch medicines from API
-  const fetchMedicines = async (productName: string = "", sortBy: number | null = null, filters: any = {}) => {
+  const fetchMedicines = async (
+    productName: string = "",
+    sortBy: number | null = null,
+    filters: any = {}
+  ) => {
     setLoading(true);
     setError(null); // Reset error state before a new fetch
 
@@ -56,7 +71,9 @@ export default function ProductsFilterPage() {
 
       // Add filter parameters (brands, forms, uses, etc.)
       Object.keys(filters).forEach((key) => {
-        queryParams.append(key, filters[key].join(',')); // Assuming filters are arrays
+        if (filters[key].length > 0) {
+          queryParams.append(key, filters[key].join(",")); // Assuming filters are arrays
+        }
       });
 
       // Make the fetch request to the API
@@ -71,7 +88,7 @@ export default function ProductsFilterPage() {
       const data = await res.json();
       console.log("Fetched Medicines:", data);
       if (data.status && Array.isArray(data.medicines)) {
-        const mappedData: Product[] = data.medicines.map((product: any) => ({
+        const mappedData: any[] = data.medicines.map((product: any) => ({
           id: product.id,
           title: product.productName,
           sellingPrice: product.sellingPrice,
@@ -104,7 +121,7 @@ export default function ProductsFilterPage() {
   // Handle Enter key press to trigger search
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      fetchMedicines(searchQuery, sortBy, selectedFilters);  // Fetch medicines based on search query
+      fetchMedicines(searchQuery, sortBy, selectedFilters); // Fetch medicines based on search query
     }
   };
 
@@ -117,8 +134,8 @@ export default function ProductsFilterPage() {
 
   // Fetch medicines on initial load or when search query/sort changes
   useEffect(() => {
-    fetchMedicines(searchQuery, sortBy, selectedFilters);  // Fetch medicines initially
-  }, []);  // Empty dependency array ensures this runs only once after initial mount
+    fetchMedicines(searchQuery, sortBy, selectedFilters); // Fetch medicines initially
+  }, []); // Empty dependency array ensures this runs only once after initial mount
 
   // Handle loading and error states
   if (loading) {
@@ -129,28 +146,26 @@ export default function ProductsFilterPage() {
     return <div>Error: {error}</div>;
   }
 
-
   return (
     <div className="">
       <div className="flex flex-col gap-3">
         <p className="text-2xl font-medium">What are you looking for?</p>
-        <GlobalSearchBox placeholder="Search for medicine and health products"  value={searchQuery}  // Bind the search query value to the input field
-          onChange={handleSearchChange}  // Call handleSearchChange on input change
-          onKeyDown={handleKeyPress}  // Call handleKeyPress when a key is pressed
-           />
+        <GlobalSearchBox
+          placeholder="Search for medicine and health products"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onKeyDown={handleKeyPress}
+        />
       </div>
       <div className="grid pt-8 grid-cols-[225px_1fr] gap-8 items-start">
         <div className="rounded-xl max-lg:hidden flex flex-col overflow-hidden">
-          <div className="bg-white  p-2">
+          <div className="bg-white p-2">
             <p className="text-xl font-medium">Filters</p>
           </div>
           <Divider />
           {pathname.includes(Routes.labTest) ? (
             <div className="bg-white flex flex-col gap-2 py-5 px-2 ">
-              <CustomCheckboxGroup
-                className=""
-                classNames={{ wrapper: "gap-5" }}
-              >
+              <CustomCheckboxGroup className="gap-5">
                 {dummyPackagesCategories.map((category) => (
                   <CustomCheckbox value={category.value} key={category.value}>
                     {category.label}
@@ -164,6 +179,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Brands</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.brand}
                     onChange={(value) => addParamsHandler(value, "brand")}
                   >
                     {dummyBrands.map((brand) => (
@@ -179,6 +195,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Product form</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.productForm}
                     onChange={(value) => addParamsHandler(value, "productForm")}
                   >
                     {dummyProductsForms.map((forms) => (
@@ -194,6 +211,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Uses</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.use}
                     onChange={(value) => addParamsHandler(value, "use")}
                   >
                     {dummyUses.map((uses) => (
@@ -209,6 +227,7 @@ export default function ProductsFilterPage() {
                 <p className="text-2xl font-medium">Age</p>
                 <div className="">
                   <CustomCheckboxGroup
+                    value={selectedFilters.age}
                     onChange={(value) => addParamsHandler(value, "age")}
                   >
                     {dummyAges.map((ages) => (
@@ -224,7 +243,7 @@ export default function ProductsFilterPage() {
         </div>
         <div className="w-full max-lg:col-span-2 flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <p className="text-shade  text-lg"> {medicines.length} results</p>
+            <p className="text-shade text-lg">{medicines.length} results</p>
             <CustomSelect label="Sort By" onChange={handleSortChange}>
               {selectOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
