@@ -3,7 +3,7 @@ import DeleteSvg from "@/src/icons/deleteSvg";
 import HeartSvg from "@/src/icons/heartSvg";
 import { useState } from "react";
 import QuantityButtons from "../product-detail/QuantityButtons";
-import { CartDataType } from "./cart";
+import { CartDataType } from "./types";
 import Api from "../utils/Api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

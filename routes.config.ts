@@ -33,8 +33,6 @@ export const Routes = {
   myMedicines: '/my-health/my-medicines',
   myLabTests: '/my-lab-tests',
 
-  myLabTests: '/my-health/my-lab-tests',
-
   privacyPolicy: '/privacy-policy',
 
   profile: '/profile',

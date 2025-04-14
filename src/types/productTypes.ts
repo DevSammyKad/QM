@@ -1,6 +1,7 @@
 export type ProductCardType = {
   imgUrl: string;
   title: string;
+  productName: string;
   sellingPrice: number;
   actualPrice: number;
   offer?: number;
