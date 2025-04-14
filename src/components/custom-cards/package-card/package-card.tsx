@@ -14,7 +14,7 @@ export default function PackageCard({ data, forCarousel }: CardType) {
       }  rounded-lg overflow-hidden shadow-product-card`}
     >
       <ImgTab
-        src={data.imgUrl || defaultImageUrl}
+        src={data.imgUrl}
         alt="package"
         className=" w-full  aspect-[3/2] "
       />

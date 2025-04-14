@@ -7,7 +7,7 @@ import { ProductCardType } from '@/src/types';
 import { PrimaryButton } from '@/src/ui/buttons/buttons';
 import IconButton from '@/src/ui/buttons/iconButton';
 import { useRouter } from 'next/navigation';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useState, useCallback } from 'react';
 import Api from '@/src/page/utils/Api';
 import { header } from '@/src/page/utils/Api';
 import { toast } from 'react-toastify';
@@ -16,173 +16,172 @@ import 'react-toastify/dist/ReactToastify.css';
 type CardType = {
   data: ProductCardType;
   forCarousel?: boolean;
+  onClick?: (productId: number) => void;
 };
 
-export default function ProductCard({ data, forCarousel = false }: CardType) {
+export default function ProductCard({
+  data,
+  forCarousel = false,
+  onClick,
+}: CardType) {
   const {
     actualPrice,
     imgUrl,
     sellingPrice,
     title,
     productName,
-    // isLiked,
+    id,
     offer = 70,
+    isLiked: initialIsLiked = false,
   } = data;
 
-  // State to handle image loading error
   const [imageError, setImageError] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false); // To track if the item is being added to the cart
-  const [error, setError] = useState(''); // For error handling
-  const defaultImageUrl = 'placeholder.png';
-  // Initialize isLiked from localStorage or use the default value from props
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [error, setError] = useState('');
   const [isLiked, setIsLiked] = useState(() => {
-    const savedIsLiked = localStorage.getItem(`isLiked_${data.id}`);
-    return savedIsLiked === 'true' || data.isLiked || false; // Check if it's already saved in localStorage
+    try {
+      const savedIsLiked = localStorage.getItem(`isLiked_${id}`);
+      return savedIsLiked === null ? initialIsLiked : savedIsLiked === 'true';
+    } catch {
+      return initialIsLiked;
+    }
   });
 
-  // Fallback function for handling image load errors
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
+  const defaultImageUrl = 'placeholder.png';
   const router = useRouter();
-  const handleCardLink = (e: MouseEvent) => {
-    e.stopPropagation();
-    router.push(Routes.medicines + '/' + encodeURIComponent(title));
-  };
 
-  // Add to Cart function
-  const handleAddToCart = async () => {
+  const handleImageError = useCallback(() => setImageError(true), []);
+
+  const handleCardClick = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation();
+      // Store the single product ID, overwriting any previous value
+      localStorage.setItem('selectedProductId', id.toString());
+      if (onClick) onClick(id);
+      router.push(
+        `${Routes.medicines}/${encodeURIComponent(title || productName)}`
+      );
+    },
+    [id, title, productName, router, onClick]
+  );
+
+  const handleAddToCart = useCallback(async () => {
     setIsAddingToCart(true);
-    setError(''); // Reset the error state before trying to add
+    setError('');
     try {
-      const userId = 4; // Replace with actual user ID from authentication context/session
-      if (!userId || !data.id) {
-        setError('User ID or Product ID is missing.');
-        return;
-      }
+      const authToken = localStorage.getItem('authToken');
+      const storedUserId = localStorage.getItem('userId');
 
-      const productId = data.id;
-      if (!productId) {
-        setError('Product ID is missing.');
-        return;
+      if (!storedUserId || !id) {
+        throw new Error('User ID or Product ID is missing.');
+      }
+      if (!authToken) {
+        throw new Error('Authentication token is missing. Please log in.');
       }
 
       const response = await fetch(Api.AddToCart, {
         method: 'POST',
-        headers: header,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-authorization': 'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
+          Authorization: `Bearer ${authToken}`,
+        },
         body: JSON.stringify({
-          userId: userId, // Add userId to the request body
-          productId: productId,
-          quantity: 1, // Assume 1 quantity for simplicity; you can modify this based on your app's requirements
+          userId: storedUserId,
+          productId: id,
+          quantity: 1,
         }),
       });
 
       const result = await response.json();
-
-      // Check if response status is successful
-      if (response.ok && result.status === true) {
-        // alert(result.message); // Display success message (or handle it in your UI)
-        toast.success(result.message || 'Item Added To Cart'); // Show success toast
-
-        return; // Success, exit the function
+      if (!response.ok || result.status !== true) {
+        throw new Error(result.message || 'Failed to add item to cart');
       }
 
-      // Handle errors if response status is not success
-      setError(result.message || 'Failed to add item to cart'); // Update error state
+      toast.success(result.message || 'Item added to cart');
     } catch (err) {
-      console.error('Error adding to cart:', err);
-      setError('An error occurred while adding to cart.');
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
-      setIsAddingToCart(false); // Reset loading state
+      setIsAddingToCart(false);
     }
-  };
+  }, [id]);
 
-  // Function to toggle the product in the wishlist
-  const handleWishlistToggle = async () => {
+  const handleWishlistToggle = useCallback(async () => {
     try {
-      const productId = data.id;
-      if (!productId) {
-        setError('Product ID is missing.');
-        return;
-      }
-
       const response = await fetch(Api.WishlistToggle, {
         method: 'POST',
         headers: header,
-        body: JSON.stringify({
-          productId: productId,
-        }),
+        body: JSON.stringify({ productId: id }),
       });
 
       const result = await response.json();
-
-      if (response.ok && result.status === true) {
-        setIsLiked(!isLiked); // Toggle the wishlist state
-        localStorage.setItem(`isLiked_${productId}`, (!isLiked).toString()); // Save the new isLiked value in localStorage
-        // alert(result.message); // Display success message (or handle it in your UI)
-        toast.success(result.message || 'Product added to Whishlist'); // Show success toast
-      } else {
-        setError(result.message || 'Failed to toggle wishlist');
+      if (!response.ok || result.status !== true) {
+        throw new Error(result.message || 'Failed to toggle wishlist');
       }
+
+      setIsLiked((prev) => {
+        const newIsLiked = !prev;
+        try {
+          localStorage.setItem(`isLiked_${id}`, newIsLiked.toString());
+        } catch {
+          console.warn('Failed to update localStorage for wishlist');
+        }
+
+        // Show the correct message based on the new state
+        // toast.success(
+        //   newIsLiked ? "Product added to wishlist" : "Product removed from wishlist"
+        // );
+
+        return newIsLiked;
+      });
     } catch (err) {
-      console.error('Error toggling wishlist:', err);
-      setError('An error occurred while toggling the wishlist.');
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
-  };
+  }, [id]);
 
   return (
     <div
-      onClick={handleCardLink}
-      className={`border bg-white  cursor-pointer  ${
+      onClick={handleCardClick}
+      className={`border bg-white cursor-pointer ${
         forCarousel ? 'min-w-[220px]' : 'w-full'
-      }  relative shadow-product-card px-3 rounded-3xl py-4`}
+      } relative shadow-product-card px-3 rounded-3xl py-4`}
     >
-      <div className="bg-[#F26522] overflow-visible text-[10px] font-bold text-white absolute top-[15px] left-[-8px]  p-1  rounded-tl-md rounded-[2px]">
-        <div className="relative w-full h-full leading-none pl-1 pr-2">
+      {/* Rest of the component remains unchanged */}
+      <div className="bg-[#F26522] text-[10px] font-bold text-white absolute top-[15px] left-[-8px] p-1 rounded-tl-md rounded-[2px]">
+        <div className="relative pl-1 pr-2 leading-none">
           {offer}% off
+          <svg
+            width="9"
+            height="8"
+            viewBox="0 0 9 8"
+            fill="none"
+            className="absolute top-full -translate-y-[53%] left-0"
+          >
+            <path
+              d="M8.02609 0.777504V7.25979C4.33618 7.25979 1.41915 4.84971 0.421875 3.64467C3.01479 0.752572 6.57173 0.528185 8.02609 0.777504Z"
+              fill="#F26522"
+            />
+          </svg>
         </div>
-        <svg
-          width="9"
-          height="8"
-          viewBox="0 0 9 8"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute top-full -translate-y-[53%] left-0"
-        >
-          <path
-            d="M8.02609 0.777504V7.25979C4.33618 7.25979 1.41915 4.84971 0.421875 3.64467C3.01479 0.752572 6.57173 0.528185 8.02609 0.777504Z"
-            fill="#F26522"
-          />
-        </svg>
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderStyle: 'solid',
-            borderWidth: '0 10px 10px 0',
-            borderColor: 'transparent white transparent transparent',
-          }}
-          className=" absolute top-[-1px] right-[0px]"
-        ></div>
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderStyle: 'solid',
-            borderWidth: ' 0  0 10px 10px',
-            borderColor: 'transparent transparent  white transparent',
-          }}
-          className=" absolute bottom-[-1px] border border-white right-[0px]"
-        ></div>
       </div>
-      <IconButton onClick={handleWishlistToggle}>
+      <IconButton
+        onClick={(e) => {
+          e.stopPropagation();
+          handleWishlistToggle();
+        }}
+      >
         {isLiked ? <RedHeartSvg /> : <HeartSvg />}
       </IconButton>
       <div className="flex items-center justify-center">
         <img
           src={imageError ? defaultImageUrl : imgUrl}
-          alt="product"
+          alt={title || productName || 'product'}
           className="object-cover object-top w-auto h-[140px]"
           onError={handleImageError}
         />
@@ -191,15 +190,17 @@ export default function ProductCard({ data, forCarousel = false }: CardType) {
         <h2 className="line-clamp-2 font-semibold text-sm leading-5">
           {title || productName}
         </h2>
-        <p className="font-extrabold text-lg ">
+        <p className="font-extrabold text-lg">
           <span>₹{sellingPrice}</span>
           <s className="pl-1 opacity-60">₹{actualPrice}</s>
         </p>
-        {error && <p className="text-red-500 text-sm">{error}</p>}{' '}
-        {/* Display error message */}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <PrimaryButton
-          onClick={handleAddToCart}
-          disabled={isAddingToCart} // Disable the button while adding to cart
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddToCart();
+          }}
+          disabled={isAddingToCart}
         >
           {isAddingToCart ? 'Adding...' : 'Add to Cart'}
         </PrimaryButton>

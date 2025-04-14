@@ -1,7 +1,7 @@
 'use client';
 import CrossSvg from '@/src/icons/crossSvg';
 import OrderConfirmPopUp from '@/src/page/payment-page/OrderConfirmPopUp';
-import { PrimaryButton } from '@/src/ui/buttons/buttons';
+import { PrimaryButton, OutLinedButton } from '@/src/ui/buttons/buttons';
 import DialogWrapper from '@/src/ui/dialog-wrapper.tsx/dialog-wrapper';
 import { Divider } from '@nextui-org/react';
 import { useEffect, useState } from 'react';

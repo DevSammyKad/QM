@@ -1,55 +1,181 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import React from 'react';
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useSearchParams } from "next/navigation";
 
 const OrdersList = () => {
-  const orderId = '123456';
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get("status") || "all";
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const authToken = localStorage.getItem("authToken");
+      const userId = localStorage.getItem("userId");
+
+      try {
+        const response = await axios.get(
+          `https://quickmeds.sndktech.online/orders.By.userId12/${userId}`,
+          {
+            headers: {
+              "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.status && response.data.orders) {
+          const formattedOrders = response.data.orders.map((order) => {
+            const firstProduct = order.products?.[0]?.product || {};
+            // Handle varying orderDate formats
+            let orderDateStr = order.orderDate || order.createdAt;
+            let formattedDate;
+            try {
+              formattedDate = new Date(orderDateStr).toLocaleDateString();
+            } catch {
+              formattedDate = new Date().toLocaleDateString(); // Fallback to current date
+            }
+
+            return {
+              id: order.id,
+              orderId: order.orderId,
+              status: order.finalOrderStatus?.toLowerCase() || "unknown",
+              orderDate: formattedDate,
+              image: firstProduct.images?.[0] || "/placeholder.png",
+              title: firstProduct.productName || "No Product",
+              price: order.amount,
+              originalPrice: firstProduct.mrp || order.amount,
+              showTrackButton: !["cancelled", "delivered"].includes(
+                order.finalOrderStatus?.toLowerCase()
+              ),
+            };
+          });
+
+          setOrders(formattedOrders);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const filteredOrders = orders.filter((order) => {
+    if (statusFilter === "all") return true;
+    return order.status === statusFilter;
+  });
+
+  const handleTrackOrder = (orderId) => {
+    localStorage.removeItem("track_order_id");
+    localStorage.setItem("track_order_id", orderId);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4 text-center text-gray-600">Loading orders...</div>
+    );
+  }
+
   return (
-    <div className="bg-sky-50 ">
-      <div className="flex items-center p-4">
-        <span className="text-gray-500 mr-2">Deliver on</span>
-        <span className="text-teal-500 font-medium">03-04-2024</span>
-      </div>
+    <div className="bg-gray-100 p-4">
+      {filteredOrders.length === 0 ? (
+        <div className="text-center text-gray-500">
+          No {statusFilter === "all" ? "" : statusFilter} orders found
+        </div>
+      ) : (
+        filteredOrders.map((order) => (
+          <div
+            key={order.id}
+            className="bg-white rounded-md shadow-sm p-4 mb-4 border border-gray-200"
+          >
+            <div
+              className={`flex items-center justify-between p-3 rounded-t-md ${
+                order.status === "cancelled"
+                  ? "bg-red-100 text-red-500"
+                  : "bg-sky-50 text-teal-500"
+              }`}
+            >
+              {order.status === "cancelled" ? (
+                <p className="font-medium">
+                  Order cancelled:{" "}
+                  <span className="text-gray-600">
+                    If you’ve paid online, refund will be initiated shortly.
+                  </span>
+                </p>
+              ) : (
+                <p className="font-medium">
+                  Order Date: <span>{order.orderDate}</span>
+                </p>
+              )}
+              {order.status !== "cancelled" && (
+                <button className="flex items-center gap-1 text-orange-500 border border-orange-400 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors">
+                  📞 Call delivery person
+                </button>
+              )}
+            </div>
 
-      <div className="bg-white rounded-md shadow-sm p-4 ">
-        <div className="flex flex-col md:flex-row items-start md:items-center">
-          <div className="w-24 h-24 relative mr-4 mb-4 md:mb-0">
-            <Image
-              src="/vitamin-c.png"
-              alt="Vitamin C Bottle"
-              fill
-              className="object-contain"
-            />
-          </div>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-2 p-3">
+              <div className="w-24 h-24 relative">
+                <Image
+                  src={order.image}
+                  alt="Order Image"
+                  fill
+                  className="object-contain"
+                />
+              </div>
 
-          <div className="flex-1">
-            <h3 className="text-lg text-gray-600 font-medium mb-1">
-              Zinga vita Vitamin Amla Extract 1000mg Tablet
-            </h3>
-            <p className="text-gray-400 text-sm mb-3 max-w-xl">
-              FastRUp Charge is a completely natural Vitamin C supplement that
-              delivers immunity-boosting...
-            </p>
-            <div className="flex items-center">
-              <span className="font-bold text-gray-800 mr-2">₹366</span>
-              <span className="text-gray-400 line-through text-sm">₹999</span>
+              <div className="flex-1">
+                <h3 className="text-lg text-gray-600 font-medium">
+                  {order.title}
+                </h3>
+                <div className="flex items-center">
+                  <span className="font-bold text-gray-800 mr-2">
+                    ₹{order.price}
+                  </span>
+                  {order.originalPrice !== order.price && (
+                    <span className="text-gray-400 line-through text-sm">
+                      ₹{order.originalPrice}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                {order.status === "cancelled" ? (
+                  <button className="px-6 py-2 border border-orange-400 text-orange-500 rounded-md hover:bg-orange-50 transition-colors">
+                    Reorder
+                  </button>
+                ) : (
+                  <>
+                    {order.showTrackButton && (
+                      <Link
+                        href={`/track-orders/${order.id}`}
+                        onClick={() => handleTrackOrder(order.id)}
+                      >
+                        <button className="px-6 py-2 border border-orange-400 text-orange-500 rounded-md hover:bg-orange-50 transition-colors">
+                          Track order
+                        </button>
+                      </Link>
+                    )}
+                    <Link href={`/my-orders/${order.id}`}>
+                      <button className="px-6 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors">
+                        See details
+                      </button>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0 w-full md:w-auto">
-            <Link href={`/track-orders/${orderId}`}>
-              <button className="px-6 py-3 border border-orange-400 text-orange-500 rounded-md hover:bg-orange-50 transition-colors">
-                Track order
-              </button>
-            </Link>
-            <Link href={`/my-orders/${orderId}`}>
-              <button className="px-6 py-3 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-colors">
-                See details
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
+        ))
+      )}
     </div>
   );
 };

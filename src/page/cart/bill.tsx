@@ -1,75 +1,107 @@
-import { Divider } from '@nextui-org/divider';
+"use client";
+import { useEffect, useState } from "react";
+import { Divider } from "@nextui-org/divider";
+import Api from "../utils/Api";
 
-export default function Bill() {
+type BillProps = {
+  appliedDiscount: number;
+};
+
+export default function Bill({ appliedDiscount = 0 }: BillProps) {
+  const [cartData, setCartData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchCartData();
+  }, []);
+
+  const fetchCartData = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(Api.ProductCartData, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-authorization": "RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch cart data");
+
+      const data = await response.json();
+      console.log("Cart API Response:", data);
+
+      setCartData(data.productCart || []);
+    } catch (err) {
+      console.error("Error fetching cart:", err);
+      setError("Error fetching cart data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Safe calculations with default values
+  const cartMRP = cartData.reduce(
+    (total, item) => total + (item.product?.mrp || 0) * (item.quantity || 1),
+    0
+  );
+
+  const totalDiscount = cartData.reduce(
+    (total, item) =>
+      total +
+      ((item.product?.mrp || 0) - (item.product?.sellingPrice || 0)) *
+        (item.quantity || 1),
+    0
+  );
+
+  const otherService = (cartMRP - totalDiscount) * 0.12; // 12% GST on final cart amount
+
+  const payableAmount = Math.max(
+    cartMRP - totalDiscount - appliedDiscount + otherService,
+    0
+  ); // Ensures no negative value
+
+  if (loading)
+    return <p className="text-center text-gray-500">Loading bill...</p>;
+
+  if (error) return <p className="text-center text-red-500">{error}</p>;
+
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[22px] font-semibold">Bill summary</p>
+      <p className="text-[22px] font-semibold">Bill Summary</p>
       <div className="text-shade flex flex-col gap-2">
         <p className="flex items-center justify-between gap-3">
-          <span className="">Cart MRP</span>
-          <span className="">₹4398</span>
+          <span>Cart MRP</span>
+          <span>₹{cartMRP.toFixed(2)}</span>
         </p>
         <p className="flex items-center justify-between gap-3">
-          <span className="">Other services</span>
-          <span className="">₹19</span>
+          <span>Total Discount</span>
+          <span className="text-red-500">-₹{totalDiscount.toFixed(2)}</span>
         </p>
+        {appliedDiscount > 0 && (
+          <p className="flex items-center justify-between gap-3">
+            <span>Coupon Discount</span>
+            <span className="text-green-500">
+              -₹{appliedDiscount.toFixed(2)}
+            </span>
+          </p>
+        )}
         <p className="flex items-center justify-between gap-3">
-          <span className="">Total discount</span>
-          <span className="">-₹2201</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className=""> Delivery Charges </span>
-          <span className="">₹2201</span>
-        </p>
-
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Packaging charge</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Handling charge</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Extra weight charges</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">COD</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Fast Services</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">emergency delivery Surcharge</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Delivery Partner Fee</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Long Distance Fee</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Convenience Changes</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">E-Consultation Fee</span>
-          <span className="">₹0</span>
-        </p>
-        <p className="flex items-center justify-between gap-3">
-          <span className="">Other charges</span>
-          <span className="">₹0</span>
+          <span>Other Services (12% GST)</span>
+          <span>₹{otherService.toFixed(2)}</span>
         </p>
         <Divider />
         <p className="flex text-black font-semibold text-xl items-center justify-between gap-3">
-          <span className=" ">To be paid</span>
-          <span className="">₹2216</span>
+          <span>To be Paid</span>
+          <span>₹{payableAmount.toFixed(2)}</span>
         </p>
       </div>
     </div>

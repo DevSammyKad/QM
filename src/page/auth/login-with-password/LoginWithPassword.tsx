@@ -8,7 +8,13 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/navigation';
 
-type PopupStep = 'login' | 'resetPassword' | 'checkMail' | 'newPassword' | null;
+type PopupStep =
+  | 'login'
+  | 'resetPassword'
+  | 'checkMail'
+  | 'newPassword'
+  | ''
+  | null;
 
 interface PopupProps {
   closePopup: () => void;
@@ -33,6 +39,8 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
       password,
     };
 
+    // const authToken = localStorage.getItem("authToken"); // Get token from localStorage
+
     try {
       const response = await fetch(
         'https://quickmeds.sndktech.online/users.Newlogin',
@@ -41,6 +49,7 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
           headers: {
             'Content-Type': 'application/json',
             'x-authorization': 'RGVlcGFrS3-VzaHdhaGE5Mzk5MzY5ODU0-QWxoblBvb2ph',
+            // Authorization: `Bearer ${authToken}`, // Use stored authToken
           },
           body: JSON.stringify(loginData),
         }
@@ -52,15 +61,17 @@ const LoginWithPassword = ({ closePopup, setPopupStep }: PopupProps) => {
         // Handle success response
         setToken(data.token); // Save token
         toast.success(data.message); // Show success toast
+        localStorage.setItem('authToken', data.token); // Store new authToken
+        localStorage.setItem('userId', data.userId); // Store userId
         router.push('/');
       } else {
         // Handle error response
         setError(data.message || 'An error occurred. Please try again.');
-        toast.error(data.message || 'An error occurred. Please try again.'); // Show error toast
+        // toast.error(data.message || "An error occurred. Please try again."); // Show error toast
       }
     } catch (error) {
       setError('An error occurred. Please check your connection.');
-      toast.error('An error occurred. Please check your connection.'); // Show error toast
+      // toast.error("An error occurred. Please check your connection."); // Show error toast
     } finally {
       setLoading(false); // Stop loading
     }

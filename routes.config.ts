@@ -1,7 +1,10 @@
+import CreateNewPassword from './src/page/auth/CreateNewPassword';
+
 export const Routes = {
   askQuestion: '/ask-question',
 
   cart: '/cart',
+  CreateNewPassword: '/CreateNewPassword',
 
   explorePackages: '/explore-packages',
 
@@ -21,9 +24,16 @@ export const Routes = {
   mostBookedHealthCheckups: '/most-booked-health-checkups',
 
   myHealth: '/my-health',
-  myPrescriptions: '/my-health/my-prescriptions',
+  myPrescriptions1: '/my-health/my-prescriptions',
+  myPrescriptions: '/my-health/upload-prescription',
+  myPrescriptionsPayment: '/my-health/my-prescriptions-payment',
+
+  createNewPassword: '/create-new-password',
+
   myMedicines: '/my-health/my-medicines',
   myLabTests: '/my-lab-tests',
+
+  myLabTests: '/my-health/my-lab-tests',
 
   privacyPolicy: '/privacy-policy',
 
@@ -35,8 +45,15 @@ export const Routes = {
   topSelling: '/top-selling',
 
   uploadPrescription: '/upload-prescription',
+  trackOrders: '/track-orders',
 
   wallet: '/wallet',
   wishlist: '/wishlist',
   payment: '/payment',
+
+  help: '/help',
+  donation: '/donation',
+  carrer: '/carrer',
+  investor: '/investor',
+  delivery: '/delivery',
 };

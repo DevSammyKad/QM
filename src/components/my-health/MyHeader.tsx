@@ -7,38 +7,35 @@ type Props = {};
 
 export default function MyHeader({}: Props) {
   const router = useRouter();
-
   const pathname = usePathname();
-
   const searchParams = useSearchParams();
-
-  const search = searchParams.get("status");
+  const search = searchParams.get("status") || "all";
 
   const handleClicks = (param: string) => {
     if (param !== search) {
-      router.replace(`${pathname}?status=${param}`);
+      router.replace(`${pathname}?status=${param}`, { scroll: false });
     }
   };
 
   return (
     <div className="flex items-center gap-3">
       <CustomMyTab
-        selected={search === null || search === "all"}
+        selected={search === "all"}
         onClick={() => handleClicks("all")}
       >
         All
       </CustomMyTab>
       <CustomMyTab
-        selected={search === "upcoming"}
-        onClick={() => handleClicks("upcoming")}
+        selected={search === "pending"}
+        onClick={() => handleClicks("pending")}
       >
-        Upcoming
+        Pending
       </CustomMyTab>
       <CustomMyTab
-        selected={search === "completed"}
-        onClick={() => handleClicks("completed")}
+        selected={search === "delivered"}
+        onClick={() => handleClicks("delivered")}
       >
-        Completed
+        Delivered
       </CustomMyTab>
       <CustomMyTab
         selected={search === "cancelled"}

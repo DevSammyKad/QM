@@ -1,11 +1,11 @@
-import { dummyProductCardData } from '@/dummyData';
-import ProductCard from '@/src/components/custom-cards/productCard/productCard';
-import Address from '@/src/page/cart/address';
-import Bill from '@/src/page/cart/bill';
-import OrderTracker from '@/src/page/track-orders/OrderTracker';
-import { OutLinedButton } from '@/src/ui/buttons/buttons';
-import Image from 'next/image';
-import React from 'react';
+import { dummyProductCardData } from "@/dummyData";
+import ProductCard from "@/src/components/custom-cards/productCard/productCard";
+import Address from "@/src/page/cart/address";
+import Bill from "@/src/page/cart/bill";
+import OrderTracker from "@/src/page/track-orders/OrderTracker";
+import { OutLinedButton } from "@/src/ui/buttons/buttons";
+import Image from "next/image";
+import React from "react";
 
 const data = dummyProductCardData.slice(0, 5);
 
@@ -16,7 +16,7 @@ const page = () => {
         <OrderTracker orderId="123456" />
         <div className=" bg-white shadow-sm my-5">
           <div className="text-sm text-gray-500 p-4">
-            Arriving by Tue, 19 Mar
+            Arriving 
             <span className="float-right">1/1</span>
           </div>
 

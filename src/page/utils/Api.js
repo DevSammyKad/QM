@@ -20,7 +20,7 @@ const Api = {
   Login: `${Main}/users.sendOtp`,
   FAQ: `${Main}/faq`,
   VerifyOtp: `${Main}/users.verifyOtp`,
-  ProductCartData: `${Main}/productCart.getAll.cartData`,
+  ProductCartData: `${Main}/productCart.get`,
   AddToCart: `${Main}/productCart.add`,
   WishlistToggle: `${Main}/wishlist.toggle`,
   MostBookedTests: `${Main}/labTest.mostBookedTests`,

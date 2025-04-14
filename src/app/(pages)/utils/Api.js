@@ -33,6 +33,10 @@ const Api = {
   LabTestBookingSummary: (id) => `${Main}/testBooking/${id}`,
   LabTestTracking: (id) => `${Main}/testBooking/${id}`,
   LabTestBookingCancel: `${Main}/adminOrder/cancel`,
+  ProductCartData: `${Main}/productCart.get`,
+  Wallet: `${Main}/wallet.get`,
+  Transaction: `${Main}/transaction.getAll`,
+  AddMoney: `${Main}/transaction.add`,
 };
 
 export default Api;
